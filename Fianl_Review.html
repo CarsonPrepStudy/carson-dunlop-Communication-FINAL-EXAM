@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Carson Dunlop Master Exam Prep</title>
+    <style>
+        :root {
+            --bg-main: #0f172a; --card-bg: #1e293b; --card-back-bg: #0f2942;
+            --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: #334155;
+            --primary: #3b82f6; --primary-hover: #2563eb; --accent: #10b981;
+            --shadow: rgba(0, 0, 0, 0.4); --correct-bg: #064e3b; --correct-border: #10b981;
+            --correct-text: #a7f3d0; --incorrect-bg: #7f1d1d; --incorrect-border: #ef4444;
+            --incorrect-text: #fecaca; --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        [data-theme="light"] {
+            --bg-main: #f8fafc; --card-bg: #ffffff; --card-back-bg: #f0f9ff;
+            --text-main: #0f172a; --text-muted: #64748b; --border-color: #cbd5e1;
+            --primary: #2563eb; --primary-hover: #1d4ed8; --accent: #059669;
+            --shadow: rgba(0, 0, 0, 0.08); --correct-bg: #ecfdf5; --correct-border: #10b981;
+            --correct-text: #065f46; --incorrect-bg: #fef2f2; --incorrect-border: #ef4444;
+            --incorrect-text: #991b1b;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; transition: background-color 0.3s ease, color 0.3s ease; }
+        .header { width: 100%; max-width: 860px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .header h1 { font-size: 1.1rem; margin: 0; line-height: 1.3; }
+        .theme-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; outline: none; }
+        .theme-btn:focus-visible { box-shadow: var(--focus-ring); }
+        .tab-nav { display: flex; width: 100%; max-width: 860px; gap: 8px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 14px 10px; background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; text-align: center; outline: none; }
+        .tab-btn:focus-visible { box-shadow: var(--focus-ring); }
+        .tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+        .tab-content { width: 100%; max-width: 860px; display: none; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        .filter-container { margin-bottom: 15px; }
+        select { width: 100%; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; font-size: 0.95rem; outline: none; cursor: pointer; }
+        select:focus-visible { box-shadow: var(--focus-ring); }
+        .progress-bar-container { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; margin-bottom: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-counter { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        .scene { width: 100%; perspective: 1000px; margin-bottom: 20px; position: relative; transition: height 0.3s ease-out; }
+        .card { width: 100%; height: 100%; position: absolute; top: 0; left: 0; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: grab; }
+        .card:active { cursor: grabbing; }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card-face { width: 100%; position: absolute; top: 0; left: 0; backface-visibility: hidden; border-radius: 12px; border: 2px solid var(--border-color); box-shadow: 0 8px 24px var(--shadow); padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .card-face-front { background-color: var(--card-bg); z-index: 2; }
+        .card-face-back { background-color: var(--card-back-bg); transform: rotateY(180deg); border-color: var(--primary); }
+        .tag { align-self: flex-start; background: var(--primary); color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; margin-bottom: 12px; }
+        .card-body h2 { font-size: 1.1rem; font-weight: 600; line-height: 1.4; margin: 0 0 15px 0; text-align: left; }
+        .card-body-back-text { text-align: left; font-size: 1rem; line-height: 1.5; align-self: flex-start; width: 100%; }
+        .card-body-back-text ol, .card-body-back-text ul { padding-left: 20px; margin: 8px 0; }
+        .card-footer { font-size: 0.75rem; color: var(--text-muted); text-align: center; font-weight: 500; margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+        .diagram-box { width: 100%; margin: 10px 0; background: #ffffff; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; display: flex; justify-content: center; align-items: center; cursor: zoom-in; padding: 5px; }
+        .diagram-box img { display: block; max-width: 100%; max-height: 40vh; object-fit: contain; border-radius: 4px; }
+        .controls { width: 100%; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { flex: 1; min-width: 80px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 14px 10px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; outline: none; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .btn:focus-visible { box-shadow: var(--focus-ring); }
+        .btn:hover { border-color: var(--primary); background: var(--primary); color: #ffffff; }
+        .btn-primary { background: var(--primary); color: #ffffff; border: none; }
+        .btn-secondary { background: var(--border-color); color: var(--text-main); border: none; }
+        
+        .start-exam-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px 20px; text-align: center; margin-bottom: 20px; }
+        .start-exam-card h2 { margin-top: 0; font-size: 1.3rem; }
+        .start-exam-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+
+        .exam-timer-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .timer-display { font-size: 1.15rem; font-weight: 800; color: #f59e0b; }
+        .quiz-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .quiz-card.correct-card { border: 2px solid var(--correct-border); }
+        .quiz-card.incorrect-card { border: 2px solid var(--incorrect-border); }
+        .mc-instruction { font-size: 0.8rem; color: var(--primary); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+        .q-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 15px; line-height: 1.4; }
+        .options-group { display: flex; flex-direction: column; gap: 10px; }
+        .option-label { display: flex; align-items: flex-start; background: var(--bg-main); border: 1.5px solid var(--border-color); padding: 14px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; line-height: 1.4; }
+        .option-label:hover { border-color: var(--primary); }
+        .option-label input[type="checkbox"], .option-label input[type="radio"] { appearance: none; width: 20px; height: 20px; border: 2px solid var(--text-muted); border-radius: 4px; margin-right: 12px; margin-top: 1px; outline: none; flex-shrink: 0; cursor: pointer; }
+        .option-label input[type="radio"] { border-radius: 50%; }
+        .option-label input:checked { border-color: var(--primary); background-color: var(--primary); box-shadow: inset 0 0 0 4px var(--bg-main); }
+        .option-label.opt-missed { background-color: var(--correct-bg); border-color: var(--correct-border); color: var(--correct-text); font-weight: 700; }
+        .option-label.opt-wrong { background-color: var(--incorrect-bg); border-color: var(--incorrect-border); color: var(--incorrect-text); font-weight: 700; }
+        .option-label.opt-correct { border-color: var(--correct-border); font-weight: 600; }
+        .opt-status-tag { margin-left: auto; font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; display: none; }
+        .opt-status-tag.show { display: inline-block; }
+        .tag-missed { background: var(--correct-border); color: #ffffff; }
+        .tag-wrong { background: var(--incorrect-border); color: #ffffff; }
+        .tag-correct { background: var(--correct-border); color: #ffffff; }
+        .explanation { font-size: 0.9rem; color: var(--text-main); margin-top: 15px; padding: 14px 16px; background: var(--bg-main); border-left: 4px solid var(--primary); border-radius: 6px; display: none; line-height: 1.5; }
+        .results-box { display: none; background: var(--card-bg); border: 2px solid var(--primary); padding: 25px; border-radius: 12px; text-align: center; margin-top: 20px; }
+        .image-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
+        .image-modal img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
+        .back-to-top { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; }
+        @media (max-width: 600px) { .header h1 { font-size: 1rem; } .tab-btn { font-size: 0.85rem; padding: 12px 5px; } .btn { padding: 12px 8px; font-size: 0.85rem; } .card-face { padding: 15px; } .diagram-box img { max-height: 30vh; } }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Carson Dunlop Master Prep</h1>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Dark/Light Theme">🌙 Theme</button>
+</div>
+
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('flashcards')">🎴 Flashcards (<span id="total-flashcards-count">122</span>)</button>
+    <button class="tab-btn" onclick="switchTab('quiz')">☑️ Mock Final (95 / <span id="total-quiz-count">128</span> Qs)</button>
+</div>
+
+<!-- TAB 1: FLASHCARDS -->
+<div id="flashcards-tab" class="tab-content active">
+    <div class="filter-container">
+        <select id="category-filter" onchange="filterCategory()" aria-label="Filter Flashcards by Category">
+            <option value="All">All 6 Sections Combined (122 Cards)</option>
+            <option value="Section 1: Verbal Communication">Section 1: Verbal Communication</option>
+            <option value="Section 2: Report Writing">Section 2: Report Writing & Formats</option>
+            <option value="Section 3: Standards & Practice">Section 3: Standards, Scope & Routine</option>
+            <option value="Section 4: Dispute Resolution">Section 4: Resolving Complaints & Liability</option>
+            <option value="Field Inspection Tools">Inspection Tools: Basic & Optional</option>
+            <option value="Appendix A/B/C: Sample Reports & Contracts">Appendix A/B/C: Sample Reports & Contracts (22 Cards)</option>
+        </select>
+    </div>
+
+    <div class="progress-header">
+        <div class="card-counter" id="card-counter">Loading...</div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" style="padding: 4px 10px; min-width:auto; font-size: 0.75rem;" onclick="toggleShuffle()">🔀 Shuffle</button>
+            <button class="btn btn-secondary" style="padding: 4px 10px; min-width:auto; font-size: 0.75rem;" onclick="resetProgress()">🔄 Reset</button>
+        </div>
+    </div>
+    
+    <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <div class="scene" id="card-scene">
+        <div class="card" id="flashcard">
+            <div class="card-face card-face-front" id="card-front-el">
+                <span class="tag" id="card-tag-front">Topic</span>
+                <div class="card-body" id="card-body-front">
+                    <h2 id="card-question">Loading Question...</h2>
+                    <div id="card-diagram-front" style="width: 100%;"></div>
+                </div>
+                <div class="card-footer">Swipe Left/Right • Tap to Reveal</div>
+            </div>
+            <div class="card-face card-face-back" id="card-back-el">
+                <span class="tag" id="card-tag-back" style="background: var(--accent);">Answer</span>
+                <div class="card-body">
+                    <div class="card-body-back-text" id="card-answer">Loading Answer...</div>
+                </div>
+                <div class="card-footer">Swipe Left/Right • Tap to Flip</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="prevCard()" aria-label="Previous Card">⬅️ Prev</button>
+        <button class="btn btn-primary" onclick="triggerFlip()" id="flip-btn">Reveal Answer</button>
+        <button class="btn" onclick="nextCard()" aria-label="Next Card">Next ➡️</button>
+    </div>
+</div>
+
+<!-- TAB 2: MOCK EXAM -->
+<div id="quiz-tab" class="tab-content">
+    
+    <!-- START EXAM LANDING CARD -->
+    <div id="start-exam-section" class="start-exam-card">
+        <h2>⏱️ Ready to Begin Your Mock Final?</h2>
+        <p>This exam will <strong>randomly select 95 questions</strong> from your complete 128-question test bank, mimicking the exact Carson Dunlop final exam blueprint. You will have <strong>120 minutes</strong> to complete the exam. The timer and test will start when you press the button below.</p>
+        <button type="button" class="btn btn-primary" style="padding: 16px 28px; font-size: 1.1rem; margin: 0 auto; max-width: 280px;" onclick="beginExam()">🚀 Start Mock Exam (95 Qs)</button>
+    </div>
+
+    <!-- EXAM RUNTIME CONTAINER -->
+    <div id="exam-active-section" style="display: none; width: 100%;">
+        <div class="exam-timer-bar">
+            <div style="font-size: 0.9rem;"><strong>⏱️ Mode:</strong> <span id="quiz-mode-text">Carson Dunlop Final (95 Random Qs)</span></div>
+            <div class="timer-display" id="exam-timer">120:00</div>
+        </div>
+
+        <div class="filter-container">
+            <select id="quiz-filter" onchange="filterQuizCategory()" aria-label="Filter Quiz by Category">
+                <option value="All">Full Randomized Mock Final (95 Qs)</option>
+                <option value="Quiz 1: Verbal Communication">Section 1: Verbal Communication</option>
+                <option value="Quiz 2: Written Reports">Section 2: Report Writing & Case Studies</option>
+                <option value="Quiz 3: Standards & Practice">Section 3: Standards, Workflow & Liability</option>
+                <option value="Section 4 & Tools: Practice">Section 4 & Tools: Complaints & Equipment</option>
+                <option value="Appendix A/B/C: Sample Reports & Contracts">Appendix A/B/C: Sample Reports & Contracts</option>
+            </select>
+        </div>
+        
+        <div class="progress-header" style="margin-bottom: 5px;">
+            <div class="card-counter" id="quiz-progress-text">0 / 95 Completed</div>
+        </div>
+        <div class="progress-bar-container"><div class="progress-bar" id="quiz-progress-bar"></div></div>
+
+        <div id="quiz-questions-container" style="width: 100%;"></div>
+        <button type="button" class="btn btn-primary" id="submit-quiz-btn" style="padding: 18px; width: 100%; font-size: 1.1rem; margin-top: 10px;" onclick="submitQuiz()">Submit Mock Final Exam</button>
+    </div>
+
+    <div id="results-box" class="results-box">
+        <h2 style="margin: 0;">Exam Complete! 🎉</h2>
+        <div style="font-size: 2.2rem; font-weight: 800; margin: 15px 0;" id="final-score">0 / 95 (0%)</div>
+        <p id="score-comment" style="color: var(--text-muted); margin-bottom: 20px;"></p>
+        <div class="controls">
+            <button type="button" class="btn btn-secondary" onclick="reviewIncorrect()">Review Incorrect</button>
+            <button type="button" class="btn btn-primary" onclick="resetQuiz()">Retake Exam</button>
+        </div>
+    </div>
+</div>
+
+<button class="back-to-top" id="btt-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})">⬆️</button>
+
+<div class="image-modal" id="img-modal" onclick="closeModal()">
+    <img id="modal-img" src="" alt="Enlarged View">
+</div>
+
+<script>
+    const imgSimpleModel = '<div class="diagram-box"><img src="simple-model-of-the-communication-process.jpg" alt="Simple Communication Model"></div>';
+    const imgRefinedModel = '<div class="diagram-box"><img src="new_a-more-refined-communication-model.jpg" alt="Refined Communication Model"></div>';
+    const imgHandGesture = '<div class="diagram-box"><img src="nonverbal-CPP-300x240.jpg" alt="Nonverbal Hand Signal"></div>';
+    const imgCodes = '<div class="diagram-box"><img src="image027-768x1121.png" alt="HRB Code Table"></div>';
+    const imgRoofDesc = '<div class="diagram-box"><img src="Roofing-report-image-1-1024x194.jpg" alt="Roofing Descriptions"></div>';
+    const imgRoofLim = '<div class="diagram-box"><img src="Roofing-report-image-2-1024x162.jpg" alt="Roofing Limitations"></div>';
+    const imgRoofRec = '<div class="diagram-box"><img src="Roofing-report-image-3.jpg" alt="Roofing Recommendations"></div>';
+    const imgRoofComments = '<div class="diagram-box"><img src="Roofing-report-image-4-768x297.jpg" alt="Roofing Written Comments"></div>';
+    const imgHorizonSloped = '<div class="diagram-box"><img src="Roofing-report-image-5-768x1046.jpg" alt="Horizon Sloped Roofing Page"></div>';
+    const imgHorizonFlat = '<div class="diagram-box"><img src="Roofing-report-image-6.jpg" alt="Horizon Flat Roofing Page"></div>';
+    const imgHorizonUI = '<div class="diagram-box"><img src="Roofing-report-image-7-768x515.jpg" alt="Horizon Data Entry UI"></div>';
+    const imgFullHRB = '<div class="diagram-box"><img src="Roofing-report-image-8-822x1024.jpg" alt="Full HRB Roofing Page"></div>';
+
+    const masterDeck = [
+        // 1-25: SECTION 1
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Define 'Communications' in one sentence. (Quick Quiz 1, Q1)", diagram: "", a: "Communication is the <b>transfer of information and comprehension through the use of common symbols</b>." },
+        { cat: "Section 1: Verbal Communication", type: "Image", q: "Examine the Simple Model diagram below. List the 5 basic elements of verbal communication. (Quick Quiz 1, Q3)", diagram: imgSimpleModel, a: "<ol><li><b>The Sender:</b> Who?</li><li><b>The Message:</b> Says what?</li><li><b>The Medium:</b> How?</li><li><b>The Receiver:</b> To whom?</li><li><b>The Response:</b> With what effect?</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Image", q: "Examine the Refined Model diagram below. List the 4 additional elements of verbal communication. (Quick Quiz 1, Q4)", diagram: imgRefinedModel, a: "<ol><li><b>Encoding:</b> Thoughts to words.</li><li><b>Decoding:</b> Translating message.</li><li><b>Noise:</b> Distortions/interference.</li><li><b>Personal Filter Areas:</b> Frames of reference.</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "List the 10 issues involved in verbal communication. (Quick Quiz 1, Q2)", diagram: "", a: "<ol><li>Sender</li><li>Receiver</li><li>Message</li><li>Encoding</li><li>Decoding</li><li>Feedback</li><li>Improving communication</li><li>Communication elements</li><li>Communication obstacles</li><li>Effective listening</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Define 'Sender' and 'Receiver' in the communication process. (Quick Quiz 1, Q5a,b)", diagram: "", a: "<ul><li><b>Sender:</b> Person who has info and starts communication.</li><li><b>Receiver:</b> Person who receives and decodes the message.</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Define 'Message' and 'Medium' in the communication process. (Quick Quiz 1, Q5c,d)", diagram: "", a: "<ul><li><b>The Message:</b> What sender hopes to communicate.</li><li><b>Medium:</b> The form/channel of message (phone, email, face-to-face).</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Define 'Encoding' and 'Decoding'. (Quick Quiz 1, Q5e,f)", diagram: "", a: "<ul><li><b>Encoding:</b> Translating thoughts to words ('how you say it').</li><li><b>Decoding:</b> Translation/interpretation by receiver.</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Define 'Feedback', 'Personal Filter Areas', and 'Noise'. (Quick Quiz 1, Q5g,h,i)", diagram: "", a: "<ul><li><b>Feedback:</b> Receiver's response.</li><li><b>Personal Filter Areas:</b> Frames of reference.</li><li><b>Noise:</b> Distortions from mannerisms, odors, temp.</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "When explaining a cracked heat exchanger, what critical facts must be communicated?", diagram: "", a: "It is the most expensive part, usually requires replacing furnace, triggers red-tag shutoff, and is a life-safety carbon monoxide hazard." },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Name two things, other than words, that express your message to your audience. (Quick Quiz 1, Q6)", diagram: "", a: "<ol><li><b>Paraverbals:</b> volume, rate, tone, pitch.</li><li><b>Body Language:</b> Gestures, posture, expressions.</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Image", q: "Examine the Hand Signal Diagram below. What does this nonverbal gesture illustrate?", diagram: imgHandGesture, a: "Nonverbal gestures have multiple cultural interpretations (greeting, #2, peace, victory, or aggressive insult)." },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "What percentage breakdown did Albert Mehrabian find for interpersonal communication?", diagram: "", a: "<ul><li><b>Words:</b> 7%</li><li><b>Paraverbals:</b> 38%</li><li><b>Body Language:</b> 55%</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "List the 5 categories of body language. (Quick Quiz 1, Q7)", diagram: "", a: "<b>Conscious:</b><ol><li>Illustrators</li><li>Emblems</li><li>Regulators</li></ol><b>Subconscious:</b><ol start='4'><li>Adaptors</li><li>Affect Displays</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "In one sentence, what is the 'Mimic Technique'? (Quick Quiz 1, Q11)", diagram: "", a: "<b>Adopting the other person's speech pattern or body language</b> to establish compatibility." },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "List at least 5 types of body language that home inspectors should avoid. (Quick Quiz 1, Q8)", diagram: "", a: "<ol><li>No eye contact.</li><li>Nervous habits.</li><li>Mumbling.</li><li>Sitting while listeners stand.</li><li>Leaning against walls.</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "List the 8 common obstacles to effective communication. (Quick Quiz 1, Q9)", diagram: "", a: "<ol><li>Different personal filters</li><li>Sender credibility</li><li>Jargon</li><li>Semantic differences</li><li>Proximity</li><li>Information overload</li><li>Time constraints</li><li>Poor location</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "Why is 'Jargon' an obstacle to effective communication with clients?", diagram: "", a: "Jargon is understood only by peers; it confuses clients and forces decoding instead of understanding." },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "List the 4 communication proximity zones in North America.", diagram: "", a: "<ul><li><b>Public:</b> 12+ ft</li><li><b>Social:</b> 4 to 12 ft</li><li><b>Personal:</b> 1.5 to 4 ft</li><li><b>Intimate:</b> <1.5 ft</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "What vertical alignment rule applies to North American verbal communication?", diagram: "", a: "North Americans prefer speaking <b>'eye-to-eye' at the same height</b>." },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "List the 8 techniques for improving communications. (Quick Quiz 1, Q10)", diagram: "", a: "<ol><li>Use feedback</li><li>Absorbable rate</li><li>Appropriate timing</li><li>Simple language</li><li>Be empathetic</li><li>Use repetition</li><li>Encourage trust</li><li>Listening environment</li></ol>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "Why do home inspectors use 'Repetition' as a teaching tool?", diagram: "", a: "Repeating key points in different ways assists learning. Closing summaries are great repetition tools." },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "List the 3 categories of distractions that harm 'Effective Listening'.", diagram: "", a: "<ul><li><b>Environmental:</b> Noise/temp.</li><li><b>Sender Distractions:</b> 'word whiskers'.</li><li><b>Internal Distractions:</b> Wandering mind.</li></ul>" },
+        { cat: "Section 1: Verbal Communication", type: "Concept", q: "How much verbal information do clients comprehend and retain over time?", diagram: "", a: "Clients comprehend <b>50 percent</b> of what is said, and retain only <b>10 percent</b> within two weeks." },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "List 7 inappropriate verbal behaviors to avoid during inspections.", diagram: "", a: "Swearing, sexual/ethnic overtones, slang, jargon, sarcasm, derision, self-deprecation." },
+        { cat: "Section 1: Verbal Communication", type: "Practical", q: "What is the rule regarding the use of 'Humor' during home inspections?", diagram: "", a: "Exercise discretion; avoid early on. Must be free of sarcasm, slang, or derision." },
+
+        // 26-50: SECTION 2
+        { cat: "Section 2: Report Writing", type: "Concept", q: "List four primary reasons written reports are needed. (Quick Quiz 2, Q1)", diagram: "", a: "<ol><li>Standards require it</li><li>Help the client</li><li>Control liability</li><li>Marketing tool</li></ol>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "List the two time options for report delivery. (Quick Quiz 2, Q2)", diagram: "", a: "<ol><li><b>On-site reports:</b> Delivered immediately.</li><li><b>Post-inspection:</b> Sent after completion.</li></ol>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "List three general types of report formats. (Quick Quiz 2, Q3)", diagram: "", a: "<ol><li><b>Checklist</b></li><li><b>Narrative</b></li><li><b>Combination</b></li></ol>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "List the 10 common components in the body of a home inspection report. (Quick Quiz 2, Q4)", diagram: "", a: "<ol><li>Scope/Contract</li><li>Descriptions</li><li>Conditions</li><li>Causes</li><li>Implications</li><li>Recommended actions</li><li>Limitations</li><li>Life expectancy</li><li>Priorities</li><li>Ballpark costs</li></ol>" },
+        { cat: "Section 2: Report Writing", type: "Practical", q: "Give a one-sentence example of: Scope/Contract, Descriptions, Conditions, and Causes. (Quick Quiz 2, Q5)", diagram: "", a: "<ul><li><b>Scope:</b> Inspection done per ASHI Standards.</li><li><b>Descriptions:</b> Roofing is asphalt shingle.</li><li><b>Conditions:</b> Water heater is leaking.</li><li><b>Causes:</b> Wet basement is from leaking gutters.</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Practical", q: "Give a one-sentence example of: Implications, Recommended Actions, and Limitations. (Quick Quiz 2, Q5)", diagram: "", a: "<ul><li><b>Implications:</b> Uneven stairs are a trip hazard.</li><li><b>Actions:</b> 30-amp fuses should be replaced.</li><li><b>Limitations:</b> No access to crawlspace.</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Practical", q: "Give a one-sentence example of: Life Expectancy, Priorities, and Ballpark Costs. (Quick Quiz 2, Q5)", diagram: "", a: "<ul><li><b>Life:</b> Roof replacement needed in 3-6 years.</li><li><b>Priorities:</b> Cover open electrical box immediately.</li><li><b>Costs:</b> Furnace replacement $1,500-$2,500.</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "Which report components are strictly required by most professional standards? (Quick Quiz 2, Q6)", diagram: "", a: "<b>The 4 Mandated Components:</b><ol><li>Descriptions</li><li>Conditions</li><li>Implications</li><li>Recommended Actions</li></ol>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "What supplementary elements over and above the standard 10 may be included in reports? (Quick Quiz 2, Q7)", diagram: "", a: "<ul><li>Report summary</li><li>Client questionnaire</li><li>Maintenance tips</li><li>Life cycle/cost charts</li><li>Cover letter/invoice</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Home Reference Book Explanation of Codes below. What do Task codes 'R', 'P', 'M', and 'F' stand for?", diagram: imgCodes, a: "<ul><li><b>R:</b> Repair/replace</li><li><b>P:</b> Provide</li><li><b>M:</b> Monitor</li><li><b>F:</b> Further evaluation</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the HRB Location and Time Codes below. What do Time codes 'O', '1', '2', and 'U' represent?", diagram: imgCodes, a: "<ul><li><b>O:</b> Immediate</li><li><b>1:</b> < 1 year</li><li><b>2:</b> < 2 years</li><li><b>U:</b> Unpredictable</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the HRB Roofing Description checklist below. What materials and chimney types are checked?", diagram: imgRoofDesc, a: "<ul><li><b>Material:</b> Asphalt, Modified Bitumen</li><li><b>Chimneys:</b> Metal, Stone</li><li><b>Leakage Prob:</b> High</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Roofing Limitations checklist below. What inspection methods and restrictions are documented?", diagram: imgRoofLim, a: "<ul><li><b>Limited by:</b> Height and slope</li><li><b>Inspected by:</b> Binoculars & Ladder</li><li><b>Disclaimers:</b> Asbestos and Mold</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the HRB Improvement Recommendations below. How is the Sloped and Flat roof defect recorded?", diagram: imgRoofRec, a: "<ul><li><b>Sloped/Flat Roof:</b> Circled <i>near end of life</i> | Task: <b>R</b> | Location: <b>T</b> | Time: <b>1</b></li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Roofing Written Comments block below. What ongoing maintenance instruction is given?", diagram: imgRoofComments, a: "<b>Written Comment:</b> <i>'ROOF-TUNEUP RECOMMENDED NOW AND EVERY 6 MONTHS UNTIL THE SLOPED AND FLAT ROOF ARE REPLACED'</i>." },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Horizon Sloped Roofing page below. What condition and photo documentation are shown?", diagram: imgHorizonSloped, a: "Shows Asphalt Shingles condition <b>Near end of life</b>, Task: Replace, Time: < 1 year, with annotated photo of severe granule loss." },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Horizon Flat Roofing page below. What material and defect are illustrated?", diagram: imgHorizonFlat, a: "Modified bitumen near end of life with wrinkling/ponding around skylight curb, replacement < 1 year." },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the Horizon Software Interface below. What data entry options are demonstrated?", diagram: imgHorizonUI, a: "Shows quick-select buttons for system orientation, sloped material, flashing, and leakage probability." },
+        { cat: "Section 2: Report Writing", type: "Image", q: "Examine the full 1-page HRB Roofing Report below. How are description, limitations, and recommendations unified?", diagram: imgFullHRB, a: "A single-page form uniting top checkboxes (descriptions), middle (limitations), and lower matrix (recommendations)." },
+        { cat: "Section 2: Report Writing", type: "Practical", q: "What is the primary advantage and disadvantage of On-Site Report delivery?", diagram: "", a: "<ul><li><b>Advantage:</b> Immediate delivery, faster payment, no homework.</li><li><b>Disadvantage:</b> Takes time on-site, can feel rushed, harder to proofread.</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Practical", q: "What is the primary advantage and disadvantage of Post-Inspection Delivery?", diagram: "", a: "<ul><li><b>Advantage:</b> Allows careful proofreading, research, polished layout.</li><li><b>Disadvantage:</b> Delay for buyer, extra evening office hours.</li></ul>" },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "Why must inspectors document site 'Limitations' explicitly in written reports?", diagram: "", a: "Documenting limitations establishes a legal boundary and disclaims liability for concealed defects." },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "What is the rule regarding Ballpark Costs in home inspection reports?", diagram: "", a: "Figures are rough estimates only (prices vary by 300%). Clients must be advised to obtain professional trade quotes." },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "Why is a Report Summary / Executive Summary recommended?", diagram: "", a: "Clients/agents need a rapid overview of major safety hazards and high-cost items without getting lost in minor data." },
+        { cat: "Section 2: Report Writing", type: "Concept", q: "How does written report clarity directly control inspector liability?", diagram: "", a: "Clear language stating condition, implication, action, and limitation leaves no room for buyers to claim they weren't warned." },
+
+        // 51-75: SECTION 3
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What is the nature of the professional liability that home inspectors bear? (Quick Quiz 3, Q2)", diagram: "", a: "<b>People will tell you that you let them down by failing to identify or properly diagnose problems.</b>" },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What are the standard time milestones for a 2.5-hour (150-minute) home inspection?", diagram: "", a: "<ul><li><b>10 min:</b> Intro</li><li><b>40 min:</b> Roof/Ext</li><li><b>70 min:</b> Mech/Elec/Struct</li><li><b>100 min:</b> Interior</li><li><b>115 min:</b> Attic/Crawl</li><li><b>150 min:</b> Wrap up</li></ul>" },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What key tasks are completed during the Pre-Inspection Office Routine (Steps 1–7)?", diagram: "", a: "Receive details, prepare contract/invoice, memorize names, map route, plan to arrive 15 mins early." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What self-checks and vehicle checks must an inspector complete before departure?", diagram: "", a: "<ul><li><b>Vehicle:</b> Fueled, organized tools, ladders.</li><li><b>Self-Check:</b> Presentable, fueled/eaten, empty bladder, breath mints.</li></ul>" },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "Describe the arrival and neighborhood routine (Steps 14–19).", diagram: "", a: "Drive past home, survey neighborhood, <b>park on the street</b>, silence phone, retrieve tools neatly." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What is the recommended script and procedure when the seller answers the door (Steps 20–21)?", diagram: "", a: "Hand business card, say <i>'I understand we have an appointment to <b>look at the house</b>.'</i> Ask about pets/sleepers." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "Why does the inspector perform two exterior tours before meeting the client (Steps 22–23)?", diagram: "", a: "<ul><li><b>First Tour:</b> Quick <i>macro</i> look.</li><li><b>Second Tour:</b> Detailed <i>micro</i> look.</li></ul>" },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What key expectations are set during the Buyer Introductory Discussion (Steps 24–29)?", diagram: "", a: "Focus is on major systems (not all-inclusive maintenance). Explain flow (out to in). Keep clients off roof/attic." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What is the standard order for inspecting the interior and mechanical systems (Steps 35–43)?", diagram: "", a: "<ol><li>HVAC</li><li>Electrical</li><li>Plumbing</li><li>Structure</li><li>Room-by-room</li><li>Distribution checks</li><li>Attic/Crawlspace</li></ol>" },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "How should the Closing Discussion and departure be handled (Steps 44–50)?", diagram: "", a: "Client chooses location. High-level overview of major issues. Confirm payment. Reset thermostat, leave first." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What are the three possibilities regarding the merits of a complaint? (Quick Quiz 3, Q3)", diagram: "", a: "<ol><li><b>Clearly right:</b> Outside scope/documented.</li><li><b>Clearly wrong:</b> Inspector error.</li><li><b>Gray area:</b> Difficult to know if visible.</li></ol>" },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "How does the 'Competent Inspector Concept' apply to evaluating liability? (Quick Quiz 3, Q4)", diagram: "", a: "<b>If a competent inspector under the same circumstances would have found the problem, the claim may have merit.</b>" },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "How do remodeling contractors impact inspector liability? (Quick Quiz 3, Q5)", diagram: "", a: "<b>Contractors criticize inspectors with 20/20 hindsight</b> after disassembling components." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What is the 'Last-One-In Syndrome' (or Last Man In Theory)? (Quick Quiz 3, Q6)", diagram: "", a: "<b>People believe the most recent information they have heard.</b> Contractors fear small repairs for callback blame." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "Explain the difference between Contract Law and Tort Law (Standard of Care vs Standards of Practice).", diagram: "", a: "<ul><li><b>Contract Law:</b> Sued for failing written terms.</li><li><b>Tort Law:</b> Sued for negligence (failing Standard of Care).</li></ul>" },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What is the inspector's 'Duty to Warn' regarding immediate life-safety hazards?", diagram: "", a: "Inspectors must warn occupants of immediate life-safety hazards (e.g., active gas leak) regardless of client contract." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What are the two general strategies for limiting inspector liability? (Quick Quiz 3, Q7)", diagram: "", a: "<ol><li><b>Prevention strategies:</b> Before/during inspection.</li><li><b>Response strategies:</b> After a complaint arises.</li></ol>" },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "List 10 key Prevention Strategies for limiting liability. (Quick Quiz 3, Q8 Part 1)", diagram: "", a: "Competent inspection, adjust expectations, describe scope/limitations, consistent depth, attribute hearsay, avoid mini-inspections, clear contract." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "List 10 key Response Strategies when handling a complaint. (Quick Quiz 3, Q8 Part 2)", diagram: "", a: "Respond quickly, don't argue on phone, revisit home, acknowledge valid problems, use 'WHEN THINGS GO WRONG'." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "Why should inspectors avoid reporting seller/agent statements as facts (Hearsay)?", diagram: "", a: "Attribute the source (e.g., <i>'Seller advises...'</i>). Otherwise, the inspector assumes liability for the claim." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "Why are 'Mini-Inspections' or quick walk-throughs dangerous for inspectors?", diagram: "", a: "Courts hold the inspector to the full liability of a standard home inspection regardless of reduced fees or verbal shortcuts." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "What is the purpose of the 'WHEN THINGS GO WRONG' document?", diagram: "", a: "Educates clients that inspections are non-invasive, explains latent defects, and why contractors give conflicting opinions." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "Why is a home inspection NOT an insurance policy?", diagram: "", a: "An inspection betters odds by identifying visible defects; an insurance policy with no exclusions would cost thousands." },
+        { cat: "Section 3: Standards & Practice", type: "Practical", q: "What is the best procedure when revisiting a home to investigate a serious complaint?", diagram: "", a: "<b>Return with a colleague/manager who does most of the talking.</b> Keeps things objective and calm." },
+        { cat: "Section 3: Standards & Practice", type: "Concept", q: "Who owns the inspection report, and what are third-party obligations?", diagram: "", a: "The <b>client owns the report</b>. The inspector typically owes no legal duty to third parties who rely on it without authorization." },
+
+        // 76-90: SECTION 4
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "What are the three distinct professional approaches/philosophies to handling complaints?", diagram: "", a: "<ul><li><b>Hardliner:</b> Defends everything.</li><li><b>Validater:</b> Defends unjust claims, accepts valid errors.</li><li><b>Conciliator:</b> Pays to make problems disappear.</li></ul>" },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "Describe the three statistical types of complaints (White, Black, Gray).", diagram: "", a: "<ul><li><b>White (10%):</b> Not an inspection issue.</li><li><b>Black (10%):</b> Clear inspector miss.</li><li><b>Gray (80%):</b> Unclear if visible/in scope.</li></ul>" },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "What are the statistical customer service facts regarding unresolved vs. resolved complaints?", diagram: "", a: "99% of unhappy clients never complain. <b>90% will return</b> if resolved satisfactorily, telling 5 others." },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "What is the 'Mean Scale' and how does it relate to site revisits?", diagram: "", a: "<b>Mean in writing &rarr; Harder on phone &rarr; Hardest face-to-face.</b> Revisits de-escalate tension." },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "What are the first 3 critical rules when receiving an angry phone complaint?", diagram: "", a: "<ol><li><b>Listen:</b> Say nothing.</li><li><b>Keep Listening:</b> Don't interrupt.</li><li><b>Say Thanks:</b> Thank them for the call.</li></ol>" },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "What is the callback time rule after pulling the inspection file?", diagram: "", a: "<b>Always call back before you said you would.</b> Never leave an angry client waiting." },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "If an attorney sends a formal complaint letter with a demand for payment, what should you do?", diagram: "", a: "Contact your Professional Liability (E&O) insurance provider before responding to avoid compromising defense coverage." },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "List the 6 points on the Carson Dunlop 'Responsibility Yardstick'.", diagram: "", a: "<ol><li>Is there a problem?</li><li>Was it documented?</li><li>Within scope?</li><li>Would a competent inspector identify it?</li><li>Did it exist then?</li><li>Was it visible?</li></ol>" },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "What tool restriction applies during a complaint revisit?", diagram: "", a: "<b>Do not use tools you don't use during a standard inspection.</b> (e.g., Thermal cameras)." },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "Why should the contractor who discovered the defect attend the site revisit?", diagram: "", a: "Allows you to ask when/how the defect became apparent during demolition, proving it was concealed." },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "What question should you ask a complaining client during negotiations instead of asking what makes them happy?", diagram: "", a: "Ask: <b>'What do you think is fair?'</b> Clients often propose very reasonable solutions." },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "Explain the legal principle of 'Betterment' in complaint settlements.", diagram: "", a: "Inspectors are not responsible for providing betterments (e.g., paying for a brand-new roof if the old one had 5 years left)." },
+        { cat: "Section 4: Dispute Resolution", type: "Practical", q: "What legal document must be obtained before paying any settlement to a client?", diagram: "", a: "A <b>Liability Release</b> signed by the client, releasing the firm from further claims." },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "Where does the home inspector's primary loyalty belong?", diagram: "", a: "Loyalty belongs strictly to the <b>home itself</b> (objective condition). Contractual duty is to the client." },
+        { cat: "Section 4: Dispute Resolution", type: "Concept", q: "What is the danger of advertising Errors and Omissions (E&O) insurance on marketing materials?", diagram: "", a: "It paints a target on your back; litigious clients are more likely to file claims knowing an insurance pool exists." },
+
+        // 91-100: TOOLS
+        { cat: "Field Inspection Tools", type: "Concept", q: "What are the inspector's most fundamental tools? (Tools Overview)", diagram: "", a: "Their <b>eyes, ears, nose, sense of touch, and brain</b>." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "List 7 essential tools in the Carson Dunlop Basic Kit.", diagram: "", a: "1. Binoculars, 2. Flashlight, 3. Ladders, 4. Screwdrivers, 5. Awl, 6. Mirror, 7. 25-ft tape." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "List 7 additional tools in the Carson Dunlop Basic Kit.", diagram: "", a: "8. Circuit tester, 9. Utility knife, 10. Gloves, 11. Coveralls/bag, 12. Pliers, 13. Tool bag." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "How is a flashlight used beyond basic illumination?", diagram: "", a: "Scanning flat along walls for drywall flaws, tapping siding for rot, pushing open attic hatches without dirtying them." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "List 6 diagnostic tools in the Carson Dunlop Optional / Advanced Kit.", diagram: "", a: "1. Moisture meter, 2. 4-foot spirit level, 3. Gas analyzer, 4. CO sensor, 5. HVAC thermometer, 6. Voltage/Amp meter." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "What are the specific inspection uses for a 4-foot spirit level (mason's level)?", diagram: "", a: "Measuring out-of-plumb walls, out-of-level floors, and verifying minimum drainage slope on pipes and gutters." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "Why does an inspector carry a simple pocket Magnet?", diagram: "", a: "To quickly differentiate <b>ferrous metals from non-ferrous metals</b> (e.g., galvanized vs. copper/brass pipes)." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "What is the purpose of carrying wire gauges and electrical wire samples?", diagram: "", a: "To visually compare and accurately confirm conductor wire sizes and branch circuit overcurrent protection sizing." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "Why should home inspectors carry Drop Sheets and clean rags/wipes?", diagram: "", a: "Drop sheets protect closet clothing from attic insulation fallout. Rags clean hands without using seller's towels." },
+        { cat: "Field Inspection Tools", type: "Practical", q: "What is the rule regarding Electrical Tape in a home inspection kit?", diagram: "", a: "<b>Making physical repairs is not recommended</b> as home inspectors should not perform repairs on inspected properties." },
+
+        // 101-122: APPENDIX A/B/C SAMPLE REPORTS & CONTRACTS (22 CARDS)
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "What is the purpose and legal effect of the 'Time to Investigate' contract clause? (Appendix A/B/C Part 2, Item 6)", diagram: "", a: "The inspector/company carries <b>no liability for any claim or complaint if conditions have been disturbed, altered, repaired, or replaced</b> before the inspector was given a reasonable period of time to investigate the site condition." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "What standard monetary cap is specified in the 'Limit of Liability / Liquidated Damages' clause? (Appendix A/B/C Part 1 & 2)", diagram: "", a: "Liability arising from any cause of action in contract or negligence is strictly limited to a <b>refund of the fee charged for the inspection</b> (or $1,000, whichever is greater in some versions)." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "Under Appendix A/C Explanation of Codes, what do Task code 'CO', Location code 'EX', and Time code 'U' represent?", diagram: imgCodes, a: "<ul><li><b>CO:</b> Correct</li><li><b>EX:</b> Exterior</li><li><b>U:</b> Unpredictable (could last a few months or several years)</li></ul>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "Under Appendix A/C Explanation of Codes, what do Task code 'P' and Time code 'D' represent?", diagram: imgCodes, a: "<ul><li><b>P:</b> Provide (install something not currently present)</li><li><b>D:</b> Discretionary item (improvements can be made but are not critical)</li></ul>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "How do Appendix A, B, and C standard disclaimers address Air Quality and Concealed Mold?", diagram: "", a: "The inspection does <b>NOT determine air quality, pollutants, spores, fungus, mold, or mildew</b>. Whenever water damage is reported, the client is advised that unseen mold/mildew may exist, and an Environmental Consultant should be consulted." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "What is the contract disclaimer regarding buried tanks in Appendix A/B/C?", diagram: "", a: "Inspectors do <b>not look for and are not responsible for buried fuel oil, septic, or gasoline tanks</b>. Clients are warned that oil-to-gas conversions carry risks of buried tanks and potential soil contamination liability." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What are the 4 mandatory elements of every defect entry across both Checklist and Horizon reports? (Appendix A vs B)", diagram: "", a: "<ol><li><b>Description / System:</b> (e.g., Sloped roofing asphalt shingles)</li><li><b>Condition / Defect:</b> (e.g., Near end of life expectancy)</li><li><b>Location & Task:</b> (e.g., Throughout, Replace)</li><li><b>Timeframe:</b> (e.g., Less than 1 year)</li></ol>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "Why is an inspection legally categorized as a 'Sampling Exercise' in the Authorization Agreement?", diagram: "", a: "Because inspectors have limited time and house components are numerous (windows, bricks, outlets), <b>testing is representative only</b> and some visible issues may go unreported without negligence." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What are the floor joist cutting and notching limitations shown in Appendix B?", diagram: "", a: "<ul><li><b>Notches (top/bottom):</b> Max 1/6 joist depth; NEVER in the middle third of the span.</li><li><b>End Notches:</b> Max 1/4 joist depth (USA) or 1/3 joist depth (Canada).</li><li><b>Holes:</b> Max diameter 1/3 joist depth (USA) or 1/4 (Canada), min 2 inches from edges.</li></ul>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What are the electrical cable stapling and panel clamping rules illustrated in Appendix B?", diagram: "", a: "<ul><li>Cables must be <b>clamped where they enter the panel</b>.</li><li>Cables must be stapled within <b>12 inches (300 mm) of panels/boxes</b>.</li><li>Supported every <b>4-1/2 ft (USA) / 4-5 ft (Canada)</b> inside walls and where cables change direction.</li></ul>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Concept", q: "Why is 'Reversed Polarity' on a polarized receptacle a severe safety hazard? (Appendix B Electrical)", diagram: "", a: "When polarity is reversed, the <b>wide slot is incorrectly hot</b>. On light fixtures, this energizes the outer screw shell instead of the center contact tab, creating an electrocution hazard when changing a lightbulb even if the wall switch is off." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is a 'Double Tap' (Double Lugging) in an electrical panel? (Appendix B)", diagram: "", a: "Attaching <b>two branch circuit conductors to a single fuse or circuit breaker terminal</b> that is designed and rated for only one wire, creating poor connections, arcing, and fire risk." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the purpose of a gas piping 'Drip Leg' / 'Sediment Trap'? (Appendix B Heating)", diagram: "", a: "Installed downstream of appliance shutoffs and before the burner to <b>trap moisture, rust, and physical debris</b>, preventing dirt from clogging gas valves and burner orifices." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the minimum required upward slope for a gas appliance B-vent connector? (Appendix B Heating)", diagram: "", a: "A minimum upward pitch of <b>1/4 inch per foot</b> rise towards the chimney or vent flue to maintain proper draft and prevent carbon monoxide backdrafting." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the expected Temperature Drop (Delta T) across an operational A/C Evaporator Coil? (Appendix B)", diagram: "", a: "An expected drop of <b>15°F to 20°F (8°C to 11°C)</b>. Less than 15°F indicates low refrigerant or poor compressor performance; greater than 20°F indicates restricted airflow (e.g., dirty filter)." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What are the refrigerant line identification and insulation rules? (Appendix B Cooling)", diagram: "", a: "<ul><li><b>Suction Line (Return):</b> Larger line, carries cold gas &rarr; <b>Must be insulated</b>.</li><li><b>Liquid Line:</b> Smaller line, carries warm liquid &rarr; Uninsulated.</li></ul>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the standard Attic Ventilation ratio specified in Carson Dunlop reports? (Appendix B)", diagram: "", a: "A total net free ventilation area of <b>1 square foot of vent area for every 300 square feet of attic floor space (1/300)</b>, evenly balanced between upper roof vents and lower soffit vents." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "Why is Exposed Plastic Foam Insulation in a garage flagged as an immediate safety defect? (Appendix B)", diagram: "", a: "Rigid plastic board insulation is combustible and releases toxic fumes when burning. It is an immediate fire hazard (Time: 0) and <b>must be protected by an approved thermal barrier</b> (such as 1/2-inch drywall)." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the minimum recommended downspout discharge distance away from foundation walls? (Appendix B)", diagram: "", a: "Downspouts must discharge water at least <b>6 feet (1.8 m) away from the house</b> to prevent surface runoff from penetrating the foundation and causing basement leakage." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the standardized Carson Dunlop hierarchy for addressing Basement Leakage? (Appendix A/B/C)", diagram: "", a: "Address causes in this strict sequence:<ol><li><b>Gutters and downspouts</b> (discharge >6 ft)</li><li><b>Lot grading</b> (slope away / swales)</li><li><b>Foundation wall cracks</b> (seal/repair)</li><li><b>High water table / Sump pumps</b></li></ol>" },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What is the standard plumbing faucet hot/cold orientation convention? (Appendix B Plumbing)", diagram: "", a: "<b>Hot on the LEFT, Cold on the RIGHT</b>. Reversed hot/cold lines pose scalding hazards and must be corrected." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", type: "Practical", q: "What causes vertical foundation cracks at the midpoint of short crawlspace walls? (Appendix B Structure)", diagram: "", a: "<b>Lateral thrust / horizontal earth pressure</b> acting against the center of the wall span, pushing the masonry inward." }
+    ];
+
+    const masterQuizQuestions = [
+        // 1-25: SECTION 1
+        { cat: "Quiz 1: Verbal Communication", q: "Which of the following statements accurately define 'Communication' as taught in Session 1? (Select ALL that apply)", diagram: "", options: [ { t: "The transfer of information and comprehension through the use of common symbols", c: true }, { t: "Derived from the Latin word 'communis' which means common", c: true }, { t: "A one-way broadcast of technical data without receiving feedback", c: false }, { t: "Successful only when the receiver gets the message the sender intended", c: true } ], exp: "Quick Quiz 1 Q1: Communication is the transfer of information and comprehension through common symbols." },
+        { cat: "Quiz 1: Verbal Communication", q: "Examine the Simple Communication Model diagram below. Which elements belong to this basic 5-part model? (Select ALL that apply)", diagram: imgSimpleModel, options: [ { t: "The sender (Who? - Intention)", c: true }, { t: "The receiver (To whom? - Perception)", c: true }, { t: "The message (Says what?) and medium (How?)", c: true }, { t: "The response / feedback (With what effect?)", c: true }, { t: "Building code reference numbers", c: false } ], exp: "Quick Quiz 1 Q3: The 5 basic elements are Sender, Message, Medium, Receiver, and Response (feedback)." },
+        { cat: "Quiz 1: Verbal Communication", q: "Examine the Refined Communication Model diagram below. Which additional components are added to the refined model? (Select ALL that apply)", diagram: imgRefinedModel, options: [ { t: "Encoding (translating thoughts to symbols/words)", c: true }, { t: "Decoding (receiver translation and interpretation)", c: true }, { t: "Noise (distortions and distractions)", c: true }, { t: "Personal filter areas (frames of reference)", c: true }, { t: "Municipal building code citation numbers", c: false } ], exp: "Quick Quiz 1 Q4: The 4 additional refined elements are Encoding, Decoding, Noise, and Personal filter areas." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which of the following are included in the 10 issues involved in verbal communication? (Select ALL that apply)", diagram: "", options: [ { t: "Sender, Receiver, Message, Encoding, and Decoding", c: true }, { t: "Feedback and Improving communication", c: true }, { t: "Communication elements, Communication obstacles, and Effective listening", c: true }, { t: "Real estate commission splitting structures", c: false } ], exp: "Quick Quiz 1 Q2 lists all 10 communication issues explicitly." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which statements correctly define 'The Message' and 'The Medium'? (Select ALL that apply)", diagram: "", options: [ { t: "The Message: What the sender hopes to communicate to the receiver", c: true }, { t: "The Medium: The form of the message (e.g., telephone, email, text, face-to-face dialogue)", c: true }, { t: "The Medium is considered inseparable from the message", c: true }, { t: "The Medium is strictly restricted to printed legal paper", c: false } ], exp: "Quick Quiz 1 Q5c,d & Section 2.2: Message is the intended communication; Medium is the delivery form." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which statements correctly define 'Encoding' and 'Decoding'? (Select ALL that apply)", diagram: "", options: [ { t: "Encoding: The translation of the sender's ideas into a set of symbols or words", c: true }, { t: "Encoding reflects 'how you say it' (bedside manner)", c: true }, { t: "Decoding: The translation and interpretation of the message by the receiver", c: true }, { t: "Decoding is identical for every person who hears the same words", c: false } ], exp: "Quick Quiz 1 Q5e,f: Encoding transforms thoughts to words; Decoding is receiver interpretation." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which things express your message to an audience OTHER than spoken words? (Select ALL that apply)", diagram: "", options: [ { t: "Paraverbals (how something was said: volume, tone, pitch, rate)", c: true }, { t: "Body language (gestures, posture, position, facial expressions)", c: true }, { t: "Architectural blueprint stamps", c: false } ], exp: "Quick Quiz 1 Q6: Paraverbals and Body language express messages beyond spoken words." },
+        { cat: "Quiz 1: Verbal Communication", q: "Examine the Hand Signal Diagram below. What communication principles does this illustrate? (Select ALL that apply)", diagram: imgHandGesture, options: [ { t: "Nonverbal gestures can have multiple distinct cultural meanings", c: true }, { t: "Meanings include a greeting, the number 2, peace symbol, or 'V' for victory", c: true }, { t: "In some cultures, this gesture is an aggressive, deliberate insult", c: true }, { t: "Hand signals are universally understood identically worldwide", c: false } ], exp: "Section 2.3: Nonverbal gestures are culturally bound and convey diverse meanings." },
+        { cat: "Quiz 1: Verbal Communication", q: "According to Albert Mehrabian's research, what are the percentages of communication components? (Select ALL that apply)", diagram: "", options: [ { t: "Words: 7%", c: true }, { t: "Paraverbals: 38%", c: true }, { t: "Body Language: 55%", c: true }, { t: "Words: 85%", c: false } ], exp: "Section 2.3: Mehrabian found Words = 7%, Paraverbals = 38%, Body Language = 55%." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which of the following are the 5 recognized categories of body language? (Select ALL that apply)", diagram: "", options: [ { t: "Illustrators (conscious gestures painting a picture)", c: true }, { t: "Emblems (informal sign language like thumbs-up)", c: true }, { t: "Regulators (gestures controlling conversation flow)", c: true }, { t: "Adaptors (subconscious stress habits like nail biting)", c: true }, { t: "Affect displays (unintentional emotional posture)", c: true } ], exp: "Quick Quiz 1 Q7: Illustrators, Emblems, Regulators, Adaptors, and Affect displays." },
+        { cat: "Quiz 1: Verbal Communication", q: "What is the 'Mimic Technique' in interpersonal communication? (Select ALL that apply)", diagram: "", options: [ { t: "Adopting the other person's speech pattern or body language", c: true }, { t: "Subconsciously used when people establish good compatibility", c: true }, { t: "Risky if executed poorly because it may be perceived as mocking", c: true }, { t: "Mandated by provincial home inspection licensing legislation", c: false } ], exp: "Quick Quiz 1 Q11: Adopting the other person's speech pattern or body language." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which types of body language should home inspectors explicitly AVOID? (Select ALL that apply)", diagram: "", options: [ { t: "Failure to establish and maintain eye contact (staring at shoes)", c: true }, { t: "Nervous habits such as biting fingernails or shifting weight continuously", c: true }, { t: "Speaking quickly or mumbling", c: true }, { t: "Sitting while your listeners are standing (or standing on a step talking down)", c: true }, { t: "Leaning against a wall while talking", c: true } ], exp: "Quick Quiz 1 Q8: Avoid no eye contact, nervous habits, mumbling, sitting while clients stand, and wall-leaning." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which of the following are listed as the 8 common obstacles to effective communication? (Select ALL that apply)", diagram: "", options: [ { t: "Different personal filter areas and Credibility of the sender", c: true }, { t: "Jargon and Semantic differences", c: true }, { t: "Proximity of persons communicating and Information overload", c: true }, { t: "Time constraints and Poor location", c: true }, { t: "Excessive client enthusiasm", c: false } ], exp: "Quick Quiz 1 Q9: Lists all 8 obstacles to effective communication." },
+        { cat: "Quiz 1: Verbal Communication", q: "Why is 'Jargon' an obstacle when communicating with clients? (Select ALL that apply)", diagram: "", options: [ { t: "Clients are forced to expend effort decoding terms rather than understanding the issue", c: true }, { t: "Terms like 'swale', 'cricket', or 'sistering joists' confuse non-specialists", c: true }, { t: "Jargon is effective and efficient when communicating with industry peers", c: true }, { t: "Jargon is required by building code compliance officers", c: false } ], exp: "Section 2.4: Jargon distinguishes occupations among peers but confuses clients." },
+        { cat: "Quiz 1: Verbal Communication", q: "What are the standard proximity communication zones in North America? (Select ALL that apply)", diagram: "", options: [ { t: "Public zone: 12 or more feet", c: true }, { t: "Social zone: 4 to 12 feet", c: true }, { t: "Personal zone: 1.5 feet to 4 feet (roughly 4 feet is comfortable)", c: true }, { t: "Intimate zone: 1.5 feet to physical contact", c: true } ], exp: "Section 2.4: Public (12+ ft), Social (4-12 ft), Personal (1.5-4 ft), Intimate (1.5 ft to contact)." },
+        { cat: "Quiz 1: Verbal Communication", q: "What vertical elevation rule applies when communicating with clients in North America? (Select ALL that apply)", diagram: "", options: [ { t: "Most people like to speak 'eye-to-eye' at the same height", c: true }, { t: "Do not stand on a step above the client and 'talk down' to them", c: true }, { t: "If clients are sitting, try to sit at the same elevation", c: true }, { t: "Inspectors must always remain standing on ladders to maintain authority", c: false } ], exp: "Section 2.4: North Americans are vertically sensitive; speak eye-to-eye at the same elevation." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which of the following are the 8 techniques for improving communication? (Select ALL that apply)", diagram: "", options: [ { t: "Use feedback and Provide message at a rate the receiver can absorb", c: true }, { t: "Ensure timing is appropriate and Use simple language", c: true }, { t: "Be empathetic to the receiver and Use repetition", c: true }, { t: "Encourage trust to enhance credibility and Create an effective listening environment", c: true } ], exp: "Quick Quiz 1 Q10: Lists all 8 communication improvement techniques." },
+        { cat: "Quiz 1: Verbal Communication", q: "Why is 'Repetition' recommended during home inspections? (Select ALL that apply)", diagram: "", options: [ { t: "A home inspection is an educational experience where the inspector is a teacher", c: true }, { t: "Receivers may understand a message when rephrased in a different way", c: true }, { t: "A summary during the closing discussion is an effective repetition tool", c: true }, { t: "To bill additional consulting hours to the client", c: false } ], exp: "Section 2.5: Repetition aids learning; closing discussion summaries serve as excellent repetition tools." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which distractions harm 'Effective Listening'? (Select ALL that apply)", diagram: "", options: [ { t: "Environmental distractions (external noise, extreme heat/cold, discomfort)", c: true }, { t: "Sender verbal 'word whiskers' (repetitive 'you know', 'got it', 'okay')", c: true }, { t: "Internal distractions (wandering mind, formulating replies instead of listening)", c: true }, { t: "Taking clear written notes", c: false } ], exp: "Section 2.5: Listening obstacles include Environmental, Sender, and Internal distractions." },
+        { cat: "Quiz 1: Verbal Communication", q: "How much spoken information do clients comprehend and retain? (Select ALL that apply)", diagram: "", options: [ { t: "People comprehend only 50 percent of what you say", c: true }, { t: "People retain only 10 percent of that within two weeks", c: true }, { t: "People retain 100 percent of spoken words permanently", c: false } ], exp: "Section 2.5 Summary: People comprehend 50% of spoken words and retain 10% of that in 2 weeks." },
+        { cat: "Quiz 1: Verbal Communication", q: "Which verbal behaviors should home inspectors explicitly AVOID? (Select ALL that apply)", diagram: "", options: [ { t: "Swearing and slang", c: true }, { t: "Sexual or ethnic overtones", c: true }, { t: "Technical jargon", c: true }, { t: "Sarcasm, derision, and self-deprecation", c: true } ], exp: "Section 2.5 Summary: Avoid swearing, sexual/ethnic overtones, slang, jargon, sarcasm, derision, and self-deprecation." },
+        { cat: "Quiz 1: Verbal Communication", q: "What rules govern the use of 'Humor' during home inspections? (Select ALL that apply)", diagram: "", options: [ { t: "Inspectors are paid to be informative rather than entertaining", c: true }, { t: "Never use humor during early parts of an inspection", c: true }, { t: "Humor must be free of swearing, slang, sarcasm, and self-deprecation", c: true }, { t: "Where there is even a shred of doubt, refrain from using humor", c: true } ], exp: "Section 2.5: Use humor with discretion, never early on, and refrain if any doubt exists." },
+        { cat: "Quiz 1: Verbal Communication", q: "When explaining a cracked heat exchanger, what critical facts must be communicated? (Select ALL that apply)", diagram: "", options: [ { t: "It is the most important and expensive part of a furnace", c: true }, { t: "It usually means replacing the entire furnace", c: true }, { t: "The gas utility usually shuts down and red-tags the furnace", c: true }, { t: "It is a life-safety issue with potential carbon monoxide poisoning", c: true } ], exp: "Section 2.2: Explaining a cracked heat exchanger requires noting replacement cost, red-tagging, and CO poisoning danger." },
+        { cat: "Quiz 1: Verbal Communication", q: "SCENARIO: The clients arrive from France speaking broken English. What do you do to communicate findings effectively? (Select ALL that apply)", diagram: "", options: [ { t: "You ask their agent to follow along and translate where needed", c: true }, { t: "You engage them visually and get them to follow along to see what you are looking at", c: true }, { t: "You tell them to sit down and let you do your job alone", c: false }, { t: "You tell them to find an inspector that speaks French", c: false }, { t: "You have your report translated before sending it to them", c: false } ], exp: "Visual engagement and leveraging the bilingual agent bridges language filters effectively." },
+        { cat: "Quiz 1: Verbal Communication", q: "SCENARIO: You discover a major cracked foundation in the basement. How do you describe it without causing undue panic? (Select ALL that apply)", diagram: "", options: [ { t: "Avoid raw engineering jargon like 'active shear failure'", c: true }, { t: "Focus on recommended actions and realistic implications rather than alarming descriptions", c: true }, { t: "Verify buyer comprehension with tactful feedback questions", c: true }, { t: "Tell the buyer to immediately cancel the purchase contract", c: false } ], exp: "Communication Principles: Provide objective perspective focusing on recommended actions and implications." },
+        { cat: "Quiz 2: Written Reports", q: "Which of the following are the primary reasons why written home inspection reports are needed? (Select ALL that apply)", diagram: "", options: [ { t: "Standards and licensing laws mandate a written report", c: true }, { t: "To help the client retain and reference critical findings", c: true }, { t: "To control liability and establish legal protection", c: true }, { t: "As a marketing tool to demonstrate professionalism and generate referrals", c: true }, { t: "To guarantee that the house will pass municipal building code inspections", c: false } ], exp: "Quick Quiz 2 Q1: Standards, Client Help, Liability Control, and Marketing." },
+        { cat: "Quiz 2: Written Reports", q: "What are the standard time options for home inspection report delivery? (Select ALL that apply)", diagram: "", options: [ { t: "On-site reports delivered immediately at the end of the walkthrough", c: true }, { t: "Reports prepared and sent after the inspection (post-inspection reporting)", c: true }, { t: "Verbal reports only with no written documentation required", c: false } ], exp: "Quick Quiz 2 Q2: On-site reports and Post-inspection reporting." },
+        { cat: "Quiz 2: Written Reports", q: "Which of the following represent the three general types of report formats? (Select ALL that apply)", diagram: "", options: [ { t: "Checklist format", c: true }, { t: "Narrative format", c: true }, { t: "Combination format", c: true }, { t: "Blueprint engineering draft", c: false } ], exp: "Quick Quiz 2 Q3: Checklist, Narrative, and Combination." },
+        { cat: "Quiz 2: Written Reports", q: "Which components are recognized as part of the 10 common components of a report body? (Select ALL that apply)", diagram: "", options: [ { t: "Scope/Contract, Descriptions, and Conditions/Evaluations", c: true }, { t: "Causes of conditions, Implications, and Recommended actions", c: true }, { t: "Limitations, Life expectancy, Priorities, and Ballpark costs", c: true }, { t: "Mortgage interest rate calculations and tax liens", c: false } ], exp: "Quick Quiz 2 Q4: Scope, Descriptions, Conditions, Causes, Implications, Recommendations, Limitations, Life Expectancy, Priorities, Ballpark Costs." },
+        { cat: "Quiz 2: Written Reports", q: "Match the statement: 'The two northern-most floor joists in the basement are rotted.' What component does this represent?", diagram: "", options: [ { t: "Conditions or Evaluations", c: true }, { t: "Scope of Contract", c: false }, { t: "Limitations", c: false }, { t: "Life Expectancy", c: false } ], exp: "Quick Quiz 2 Q5: Stating that a component is damaged or rotted is a Condition/Evaluation." },
+        { cat: "Quiz 2: Written Reports", q: "Match the statement: 'The damage to the joists is a result of moisture penetration through the top of the foundation wall.' What component is this?", diagram: "", options: [ { t: "Causes of Conditions", c: true }, { t: "Implications of Conditions", c: false }, { t: "Recommended Actions", c: false }, { t: "Priorities", c: false } ], exp: "Quick Quiz 2 Q5: Explaining why the defect happened is the Cause of Condition." },
+        { cat: "Quiz 2: Written Reports", q: "Match the statement: 'The uneven stairs are a trip hazard.' What component does this illustrate?", diagram: "", options: [ { t: "Implications of Conditions", c: true }, { t: "Descriptions", c: false }, { t: "Scope/Contract", c: false }, { t: "Ballpark Costs", c: false } ], exp: "Quick Quiz 2 Q5: Explaining the hazard or risk resulting from a defect is the Implication." },
+        { cat: "Quiz 2: Written Reports", q: "Match the statement: 'No access was gained to the crawlspace due to stored personal items.' What component is this?", diagram: "", options: [ { t: "Limitations / Disclaimers", c: true }, { t: "Recommended Actions", c: false }, { t: "Descriptions", c: false }, { t: "Priorities", c: false } ], exp: "Quick Quiz 2 Q5: Stating an area was inaccessible is a Limitation." },
+        { cat: "Quiz 2: Written Reports", q: "Which four report components are strictly REQUIRED by most professional home inspection standards? (Select ALL that apply)", diagram: "", options: [ { t: "Descriptions of materials/systems", c: true }, { t: "Conditions (evaluations of significant defects)", c: true }, { t: "Implications (unless obvious to the client)", c: true }, { t: "Recommended actions (corrective steps)", c: true }, { t: "Exact municipal trade cost estimates", c: false } ], exp: "Quick Quiz 2 Q6: Standards mandate Descriptions, Conditions, Implications, and Recommended actions." },
+        { cat: "Quiz 2: Written Reports", q: "Which supplementary elements may be included in reports over and above the standard 10 body components? (Select ALL that apply)", diagram: "", options: [ { t: "Report summary / Executive summary", c: true }, { t: "Client questionnaire / feedback form", c: true }, { t: "Maintenance tips and seasonal care guides", c: true }, { t: "Life cycle and cost reference charts", c: true } ], exp: "Quick Quiz 2 Q7: Summaries, questionnaires, maintenance tips, and cost guides are valuable supplementary items." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the Home Reference Book Explanation of Codes below. What do Task codes 'R', 'P', and 'F' stand for? (Select ALL that apply)", diagram: imgCodes, options: [ { t: "R: Repair or replace", c: true }, { t: "P: Provide", c: true }, { t: "F: Further evaluation required", c: true }, { t: "CO: Correct", c: true }, { t: "R: Repaint only", c: false } ], exp: "HRB Code Table: R = Repair/replace, P = Provide, F = Further evaluation, CO = Correct." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the HRB Code Table below. Which Time codes represent 'Immediate' and 'Unpredictable'? (Select ALL that apply)", diagram: imgCodes, options: [ { t: "O: Immediate", c: true }, { t: "U: Unpredictable; this component could last a few months or several years", c: true }, { t: "1: Less than one year", c: true }, { t: "2: Less than two years", c: true }, { t: "O: Optional improvement", c: false } ], exp: "HRB Code Table: O = Immediate, 1 = <1 yr, 2 = <2 yrs, U = Unpredictable, D = Discretionary." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the HRB Roofing Description Checklist below. Which items were inspected and checked? (Select ALL that apply)", diagram: imgRoofDesc, options: [ { t: "Roofing Material: Asphalt (1.1) and Modified Bitumen (1.10)", c: true }, { t: "Chimneys: Metal and Stone", c: true }, { t: "Probability of Leakage: High", c: true }, { t: "Roofing Material: Slate (1.3)", c: false } ], exp: "Roofing Report Image 1: Asphalt and Modified Bitumen checked, Metal and Stone chimneys checked, High leakage probability." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the Roofing Limitations Checklist below. What inspection limitations and disclaimers are documented? (Select ALL that apply)", diagram: imgRoofLim, options: [ { t: "Chimney/Flashing inspection limited by: Height and slope of roof", c: true }, { t: "Roof inspection method: Binoculars and Ladder at edge", c: true }, { t: "Roof inspection prevented/limited by: Height and Slope", c: true }, { t: "Standard disclaimers checked: Asbestos and Moisture/Mold concerns", c: true }, { t: "Roof was walked completely end-to-end", c: false } ], exp: "Roofing Report Image 2: Limited by height/slope, inspected from ladder edge & binoculars; disclaimers for mold and asbestos checked." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the HRB Improvement Recommendations below. What recommendation is recorded for the sloped roof?", diagram: imgRoofRec, options: [ { t: "Sloped roof is near end of life; Task: Replace (R), Location: Throughout (T), Time: <1 yr (1)", c: true }, { t: "Sloped roof has minor blisters; Task: Clean (CL), Time: Immediate (O)", c: false }, { t: "No recommendations at present", c: false } ], exp: "Roofing Report Image 3: Sloped roof circled 'near end of life', Task R, Location T, Time 1." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the Roofing Written Comments block below. What specific instruction is written?", diagram: imgRoofComments, options: [ { t: "Roof-tuneup recommended now and every 6 months until the sloped and flat roof are replaced", c: true }, { t: "Replace the entire roof structure immediately prior to closing", c: false }, { t: "Install new seamless aluminum gutters within two weeks", c: false } ], exp: "Roofing Report Image 4: 'ROOF-TUNEUP RECOMMENDED NOW AND EVERY 6 MONTHS UNTIL THE SLOPED AND FLAT ROOF ARE REPLACED'." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the Horizon Roofing Report page below. What defect details and media are presented?", diagram: imgHorizonSloped, options: [ { t: "Asphalt shingles near end of life expectancy with curling/loss of granules, accompanied by an annotated photo", c: true }, { t: "Metal stone chimney descriptions and high probability of leakage", c: true }, { t: "Limitations stating inspection was performed with binoculars and from roof edge due to height/slope", c: true }, { t: "Certification that the roof will last another 10 years without maintenance", c: false } ], exp: "Roofing Report Image 5: Shows Horizon digital summary of asphalt shingles near end of life with embedded photo and limitations." },
+        { cat: "Quiz 2: Written Reports", q: "Examine the Horizon UI interface below. What advantages does software data-entry offer? (Select ALL that apply)", diagram: imgHorizonUI, options: [ { t: "Standardized buttons ensure consistent descriptions across different inspectors", c: true }, { t: "Reduces typing errors and streamlines field data collection", c: true }, { t: "Automates photo attachment and report publishing", c: true }, { t: "Eliminates the legal requirement for written disclaimers", c: false } ], exp: "Roofing Report Image 7: Horizon interface provides rapid, structured, error-resistant standardized data collection." },
+        { cat: "Quiz 3: Standards & Practice", q: "It is January 13 and you are inspecting a home in a colder climate. Which of the following statements is likely NOT accurate? (Select one)", diagram: "", options: [ { t: "Furnace could not be tested due to cold temperature", c: true }, { t: "Grading was not visible due to snow covering", c: false }, { t: "A/C could not be tested due to cold temperature", c: false }, { t: "Roof flashings were not visible due to snow covering", c: false }, { t: "Shingle inspection was limited by snow covering", c: false } ], exp: "Furnaces CAN and MUST be tested in cold weather. It is A/C units that cannot be tested in the cold." },
+        { cat: "Quiz 3: Standards & Practice", q: "You can tell the house is about 20 years old, and apparently it has been tenanted for the last ten years. Which of the following is NOT a concern? (Select one)", diagram: "", options: [ { t: "Regular maintenance has not been performed", c: false }, { t: "There are aging systems in the home", c: false }, { t: "The tenant has performed unauthorized repairs and improvements on his/her own", c: false }, { t: "The house may have knob and tube wiring", c: true }, { t: "Components may be damaged/broken due to misuse", c: false } ], exp: "A 20-year-old house (built ~2000s) would never have knob and tube wiring, which was phased out by 1950." },
+        { cat: "Quiz 3: Standards & Practice", q: "You arrive at the house ten minutes early. You see it is unoccupied, and has a note on the door from a property management company that it has been winterized. What is your biggest concern? (Select one)", diagram: "", options: [ { t: "The inspection will take longer because more of the house is visible", c: false }, { t: "The furnace cannot be tested", c: false }, { t: "The A/C cannot be tested", c: false }, { t: "The plumbing cannot be tested", c: true }, { t: "The electric panel cover cannot be removed", c: false } ], exp: "Winterized homes have water shut off and drained. Turning it on risks frozen pipe ruptures, so plumbing cannot be tested." },
+        { cat: "Quiz 2: Written Reports", q: "SCENARIO: A client asks for exact contractor repair costs for a damaged deck. What is the correct procedure?", diagram: "", options: [ { t: "Provide rough ballpark cost ranges if permitted, but advise obtaining formal contractor quotes", c: true }, { t: "State that costs vary by 300% based on materials and method", c: true }, { t: "Guarantee that the deck repair will cost exactly $1,200", c: false }, { t: "Offer to perform the carpentry repair yourself next week for a fee", c: false } ], exp: "HRB Note & Ethics: Ballpark costs are rough approximations. Prices vary widely; inspectors must advise trade estimates and cannot solicit repair work." },
+        { cat: "Quiz 2: Written Reports", q: "SCENARIO: You discover that an attic access hatch is painted shut. What is the proper reporting action?", diagram: "", options: [ { t: "Document a Limitation stating the attic was inaccessible because the hatch was sealed", c: true }, { t: "Recommend providing access and inspecting the attic space prior to closing", c: true }, { t: "Pry the hatch open with a crowbar and repaint the ceiling yourself", c: false } ], exp: "Standards of Practice: Never force sealed hatches or cause damage. Document the limitation and recommend access be provided." },
+        { cat: "Quiz 2: Written Reports", q: "SCENARIO: Why should home inspectors avoid using absolute or defensive legal jargon in report narratives?", diagram: "", options: [ { t: "Excessive legalistic jargon confuses clients and reduces readability of genuine defect warnings", c: true }, { t: "Courts prioritize clear communication of actual visible conditions over blanket liability disclaimers", c: true }, { t: "Inspectors are legally required to warrant all appliances for 1 year", c: false } ], exp: "Section 2: Clear, professional plain language ensures comprehension and holds up best in dispute resolution." },
+        { cat: "Quiz 2: Written Reports", q: "SCENARIO: You find water seepage through a foundation crack. The seller claims 'it only happens once a year.' How should you document this?", diagram: "", options: [ { t: "Report the visible physical evidence of water penetration regardless of the seller's claim", c: true }, { t: "Recommend monitoring, proper exterior drainage grading, and specialist evaluation if leaking persists", c: true }, { t: "Omit the crack from the report because the seller verbally explained it", c: false } ], exp: "Standards of Practice: Report visual evidence and implications objectively without relying on verbal representations by the seller." },
+        { cat: "Quiz 3: Standards & Practice", q: "What is the primary nature of the professional liability that home inspectors bear? (Select the BEST answer)", diagram: "", options: [ { t: "People will tell you that you let them down by failing to identify or properly diagnose problems", c: true }, { t: "Inspectors are strictly liable for municipal building code violations", c: false }, { t: "Inspectors must guarantee that all appliances function for at least one year", c: false }, { t: "Inspectors bear zero legal liability if they hold an association certificate", c: false } ], exp: "Quick Quiz 3 Q2: The core nature of inspector liability is that clients claim the inspector failed to identify or properly diagnose problems." },
+        { cat: "Quiz 3: Standards & Practice", q: "What are the three legal and practical possibilities regarding the merits of a complaint against an inspector? (Select ALL that apply)", diagram: "", options: [ { t: "You were clearly right", c: true }, { t: "You were clearly wrong", c: true }, { t: "It's difficult to know (gray issue)", c: true }, { t: "The client automatically wins full property value", c: false } ], exp: "Quick Quiz 3 Q3: Complaints fall into: clearly right, clearly wrong, or difficult to know." },
+        { cat: "Quiz 3: Standards & Practice", q: "How does the 'Competent Inspector Concept' apply when evaluating legal liability? (Select the BEST answer)", diagram: "", options: [ { t: "If a competent inspector under the same circumstances would have found the problem, the claim may have merit", c: true }, { t: "If any licensed master tradesperson finds a defect later, the inspector is automatically negligent", c: false }, { t: "The inspector is evaluated against perfection regardless of weather or access obstacles", c: false } ], exp: "Quick Quiz 3 Q4: The standard compares performance to what a competent inspector under identical circumstances would have found." },
+        { cat: "Quiz 3: Standards & Practice", q: "How do remodeling contractors commonly impact home inspector liability? (Select ALL that apply)", diagram: "", options: [ { t: "Contractors often indicate that a home inspector should have identified the problem", c: true }, { t: "Contractors evaluate conditions with 20/20 hindsight after problems manifest", c: true }, { t: "Contractors may partially disassemble finishes to uncover hidden defects", c: true }, { t: "Contractors are generalists who always agree with home inspection standards", c: false } ], exp: "Quick Quiz 3 Q5: Contractors often criticize inspectors using hindsight or after invasive dismantling." },
+        { cat: "Quiz 3: Standards & Practice", q: "What is the 'Last-One-In Syndrome' (or Last Man In Theory)? (Select ALL that apply)", diagram: "", options: [ { t: "People tend to believe the most recent information they have heard", c: true }, { t: "Contractors are reluctant to do small repairs because the last person working gets blamed if leaks recur", c: true }, { t: "Homeowners disproportionately discount the earlier findings of the home inspector", c: true }, { t: "The last person to leave the home must pay the utility bills", c: false } ], exp: "Quick Quiz 3 Q6: Homeowners believe the latest advice, and contractors avoid small repairs to avoid callback blame." },
+        { cat: "Quiz 3: Standards & Practice", q: "What are the two general strategies for limiting home inspector liability? (Select ALL that apply)", diagram: "", options: [ { t: "Prevention strategies", c: true }, { t: "Response strategies", c: true }, { t: "Litigation acceleration strategies", c: false }, { t: "Unilateral fee forfeiture strategies", c: false } ], exp: "Quick Quiz 3 Q7: The two broad categories are Prevention strategies and Response strategies." },
+        { cat: "Quiz 3: Standards & Practice", q: "Which of the following are recognized Prevention Strategies for home inspectors? (Select ALL that apply)", diagram: "", options: [ { t: "Perform a competent inspection and adjust client expectations", c: true }, { t: "Clearly describe scope of work and specific limitations in the report", c: true }, { t: "Inspect at a consistent depth and avoid reporting hearsay as facts", c: true }, { t: "Avoid superficial walk-through mini-inspections", c: true }, { t: "Guarantee all underground sewer lines verbally", c: false } ], exp: "Quick Quiz 3 Q8 Part 1: Lists standard prevention techniques to minimize liability." },
+        { cat: "Quiz 3: Standards & Practice", q: "Which of the following are recognized Response Strategies when handling client complaints? (Select ALL that apply)", diagram: "", options: [ { t: "Respond as quickly as possible and do not avoid the issue", c: true }, { t: "Do not argue over the phone; go back to the home to investigate", c: true }, { t: "Acknowledge the problem if one exists and seek an amicable resolution", c: true }, { t: "Use the 'WHEN THINGS GO WRONG' document in your report", c: true }, { t: "Ignore all phone calls for 30 days until the client calms down", c: false } ], exp: "Quick Quiz 3 Q8 Part 2: Outlines professional, rapid response strategies when complaints occur." },
+        { cat: "Quiz 3: Standards & Practice", q: "For a standard 2.5-hour (150-minute) home inspection, what are the target time milestones? (Select ALL that apply)", diagram: "", options: [ { t: "10 minutes: Introductory discussion completed", c: true }, { t: "40 minutes: Roof and exterior finished", c: true }, { t: "70 minutes: Mechanical, electrical, and structural systems finished", c: true }, { t: "100 minutes: Interior finished", c: true }, { t: "115 minutes: Attic and crawlspace finished", c: true } ], exp: "Section 4.1: Time goals for a 150-minute inspection are 10m intro, 40m ext/roof, 70m mech/elec/struct, 100m interior, 115m attic/crawlspace." },
+        { cat: "Quiz 3: Standards & Practice", q: "When an inspector arrives at a property, where should the vehicle be parked?", diagram: "", options: [ { t: "On the street in front of or near the home", c: true }, { t: "In the center of the driveway blocking the garage", c: false }, { t: "On the front lawn near the entryway", c: false } ], exp: "Section 4.1: Park on the street to leave the best driveway parking space open for clients and agents." },
+        { cat: "Quiz 3: Standards & Practice", q: "Why does the inspector say 'look at the house' rather than 'inspect the house' when introducing themselves to the seller?", diagram: "", options: [ { t: "The word 'inspect' can be intimidating or alarming to homeowners", c: true }, { t: "Because a home inspection is legally defined as a casual glance", c: false }, { t: "To deceive the seller about the inspection's purpose", c: false } ], exp: "Section 4.1: Saying 'look at the house' is less intimidating to sellers while maintaining professionalism." },
+        { cat: "Quiz 3: Standards & Practice", q: "Why does Carson Dunlop recommend performing two initial exterior tours around the home? (Select ALL that apply)", diagram: "", options: [ { t: "The first tour provides a quick macro overview of the building", c: true }, { t: "The second tour provides a detailed micro examination of components", c: true }, { t: "One tour is clockwise and the other is counterclockwise", c: true }, { t: "To determine safe ladder and roof access points", c: true }, { t: "To climb boundary fences to test structural rigidity", c: false } ], exp: "Section 4.1: Two tours (macro & micro, clockwise & counterclockwise) provide complete exterior perspective." },
+        { cat: "Quiz 3: Standards & Practice", q: "What should the inspector do if the roof is found to be in severe disrepair during the initial check?", diagram: "", options: [ { t: "Complete the exterior tour in the opposite direction to mix good news with bad before delivering the full summary", c: true }, { t: "Immediately shout the bad news across the lawn to the buyers", c: false }, { t: "Cancel the inspection immediately and leave the site", c: false } ], exp: "Section 4.3: If the roof is a disaster, complete the exterior tour to mix good and bad news, helping clients maintain perspective." },
+        { cat: "Quiz 3: Standards & Practice", q: "What is the difference between Standards of Practice and Standard of Care in tort law? (Select ALL that apply)", diagram: "", options: [ { t: "Standards of Practice are defined contractual industry guidelines", c: true }, { t: "Standard of Care is the degree of caution a reasonable person is expected to exercise under specific circumstances", c: true }, { t: "Courts may hold inspectors to a higher local Standard of Care regardless of written exclusions", c: true }, { t: "Standards of Practice completely override all tort liability in common law courts", c: false } ], exp: "Section 5.0: Standards of Practice define contract scope, but tort law evaluates the reasonable Standard of Care." },
+        { cat: "Quiz 3: Standards & Practice", q: "What is an inspector's 'Duty to Warn' when discovering an immediate life-safety hazard? (Select ALL that apply)", diagram: "", options: [ { t: "The inspector must notify the occupants of the property immediately", c: true }, { t: "The duty to protect human life overrides strict client confidentiality", c: true }, { t: "The notification should be documented in the inspection report", c: true }, { t: "The inspector must keep severe gas leaks secret if requested by the buyer", c: false } ], exp: "Section 5.0: Immediate life safety hazards trigger a Duty to Warn occupants regardless of client contract boundaries." },
+        { cat: "Quiz 3: Standards & Practice", q: "How should an inspector document information provided verbally by sellers or real estate agents (Hearsay)? (Select ALL that apply)", diagram: "", options: [ { t: "Attribute the source clearly in the report (e.g., 'The seller advises that the roof covering is two years old')", c: true }, { t: "Do not state verbal representations as verified inspector facts", c: true }, { t: "Accept all seller statements as guaranteed ground truth without attribution", c: false } ], exp: "Section 5.0: Always attribute verbal statements to their source to avoid assuming liability for third-party hearsay." },
+        { cat: "Quiz 3: Standards & Practice", q: "What are the legal risks associated with performing 'Mini-Inspections' or quick walk-throughs?", diagram: "", options: [ { t: "Courts may hold the inspector to full professional liability despite reduced fees or verbal shortcuts", c: true }, { t: "Mini-inspections carry zero legal risk because fees are low", c: false }, { t: "Clients are legally barred from filing complaints on walk-throughs", c: false } ], exp: "Section 5.0: Quick walk-throughs carry massive liability because courts treat the practitioner as a full professional." },
+        { cat: "Quiz 3: Standards & Practice", q: "Why is a home inspection legally defined as a 'sampling exercise'? (Select ALL that apply)", diagram: "", options: [ { t: "Numerous repetitive components (e.g., receptacles, windows) are tested by representative sample", c: true }, { t: "Testing every single component would require multiple days and prohibitive cost", c: true }, { t: "Some visible minor defects in non-tested items may go unreported without inspector negligence", c: true }, { t: "Sampling guarantees that 100% of all latent defects will be uncovered", c: false } ], exp: "WHEN THINGS GO WRONG & Section 5.0: Testing representative samples of numerous items is standard practice." },
+        { cat: "Quiz 3: Standards & Practice", q: "What is the best procedure when returning to a home to investigate a formal client complaint?", diagram: "", options: [ { t: "Have the inspector return accompanied by a colleague or manager who conducts most of the conversation", c: true }, { t: "Send an aggressive legal letter refusing on-site access", c: false }, { t: "Have the inspector argue emotionally over every detail", c: false } ], exp: "Section 5.0: Returning with a colleague allows the inspector to recall site conditions while keeping discussions calm and objective." },
+        { cat: "Quiz 3: Standards & Practice", q: "Who owns the home inspection report, and what third-party protections apply? (Select ALL that apply)", diagram: "", options: [ { t: "The client owns the report, while the inspection firm retains copyright", c: true }, { t: "The report cannot be shared with third parties without client permission", c: true }, { t: "Contract clauses typically disclaim liability to unauthorized third parties who rely on the report", c: true }, { t: "Any neighbor who reads the report can sue the inspector for damages", c: false } ], exp: "Section 5.0: The client owns the report, copyright is retained by the inspector, and third-party liability is disclaimed." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: An inspector arrives at 8:35 AM for a 9:00 AM appointment. The seller's teenage son answers and says parents are away. What should the inspector do? (Select ALL that apply)", diagram: "", options: [ { t: "Introduce yourself, provide your business card and Seller's Letter", c: true }, { t: "Explain the inspection sequence and begin your exterior and roof tours outside", c: true }, { t: "Wait for the buyers and agents to arrive before entering the interior", c: true }, { t: "Immediately enter private bedrooms without the agent or buyers present", c: false } ], exp: "Sections 4.1 & 4.2: Hand over credentials, conduct external work, and enter the interior when agents/buyers arrive." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: A client calls you furious because a basement wall leaked during a 100-year torrential windstorm, two months after closing. How should you respond? (Select ALL that apply)", diagram: "", options: [ { t: "Respond quickly and professionally without arguing over the phone", c: true }, { t: "Go back to the property to examine the condition firsthand", c: true }, { t: "Explain that intermittent leaks from extreme weather cannot be predicted without historical clues", c: true }, { t: "Ignore the client's voicemail and block their phone number", c: false } ], exp: "Response Strategies & WHEN THINGS GO WRONG: Respond quickly, visit the site, remain calm, and explain weather-dependent latent leaks." },
+        { cat: "Quiz 3: Standards & Practice", q: "The listing agent arrives. He is driving a pick-up. He says to you 'I thought I might tag along on this inspection. I was a contractor for 20 years before I got into real estate.' What are your concerns? (Select all that apply)", diagram: "", options: [ { t: "The agent may try to direct the inspection", c: true }, { t: "The agent may not be objective", c: true }, { t: "Your client may want to discuss renovations with the listing agent", c: true }, { t: "The agent represents the seller and your client may not want you to share your findings", c: true }, { t: "There are no concerns. Having a second set of eyes is a good thing when doing an inspection", c: false } ], exp: "Former contractor agents often lack objectivity, try to steer the inspection, and represent the seller's interests against the buyer's confidentiality." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: While conducting the closing summary, the selling agent interrupts repeatedly, trying to downplay major electrical panel defects in front of the buyer. What should you do? (Select ALL that apply)", diagram: "", options: [ { t: "Maintain a calm, professional demeanor without losing your temper", c: true }, { t: "Clearly explain the factual safety implications of the electrical defect directly to the client", c: true }, { t: "Verify that the client comprehends the recommended corrective action by an electrician", c: true }, { t: "Alter the report text to minimize the defect to please the real estate agent", c: false } ], exp: "Sections 4.5 & 5.0: Maintain professional composure, ensure accurate buyer comprehension, and never compromise report accuracy." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: An inspector tests the furnace using the thermostat. At the conclusion of the inspection, what critical step must be performed before departure?", diagram: "", options: [ { t: "Ensure the thermostat is returned to its original temperature and mode setting", c: true }, { t: "Leave the heat running at maximum to warm the house for the seller", c: false }, { t: "Disconnect the low-voltage thermostat wiring", c: false } ], exp: "Section 4.5: Always verify that mechanical controls, thermostats, and fixtures are returned to their original settings." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: A client calls complaining that three electrical outlets in the spare bedroom do not work. During the inspection, they were behind heavy stacked furniture. What applies? (Select ALL that apply)", diagram: "", options: [ { t: "Home inspections test a representative sample of receptacles", c: true }, { t: "Receptacles blocked by personal storage are considered inaccessible limitations", c: true }, { t: "The inspector should explain sampling and site limitations politely and objectively", c: true }, { t: "The inspector must pay for rewiring the entire bedroom circuit immediately", c: false } ], exp: "WHEN THINGS GO WRONG: Inspections rely on sampling, and items concealed by heavy furniture are recognized limitations." },
+        { cat: "Quiz 3: Standards & Practice", q: "You are partially through an inspection at a rather complex older house that has issues. Your clients are first time buyers and have followed you around dutifully, asking many questions along the way. You suddenly discover that you are running late. What do you do? (Select one)", diagram: "", options: [ { t: "You tell your clients that you are running late and ask that they only ask questions if they are crucial", c: false }, { t: "You tell your clients that you will perform the rest of the inspection without them", c: false }, { t: "You follow your standard procedure as closely as possible, but leave out the less important activities", c: true }, { t: "You contact your next appointment and advise them that you have been delayed and will be late", c: false }, { t: "You stop the inspection at the regular time and document limitations in your report", c: false } ], exp: "Based on the provided Carson Dunlop exam solution format, the accepted procedure is to adjust workflow slightly while continuing." },
+        { cat: "Section 4 & Tools: Practice", q: "An inspection report erroneously omitted severe shingle deterioration on a roof with 4 years of remaining life. The client replaces the entire roof with a 25-year system and demands full reimbursement. Under 'Betterment', what is owed?", diagram: "", options: [ { t: "The inspector is only responsible for the prorated financial value of the remaining 4 years of roof life.", c: true }, { t: "The inspector is liable for 100% of the replacement invoice.", c: false }, { t: "The inspector owes nothing because roofs are wear-and-tear items.", c: false } ], exp: "Betterment: Compensation is limited to restoring the lost remaining life rather than purchasing a brand-new asset." },
+        { cat: "Section 4 & Tools: Practice", q: "Why does Carson Dunlop advise inspectors against voluntarily reporting on items explicitly excluded in their contract (e.g., asbestos sampling or building code compliance)?", diagram: "", options: [ { t: "Courts may rule that exceeding scope rendered contract limitations void, creating liability for all other excluded systems.", c: true }, { t: "It increases the cost of the inspection beyond standard market rates.", c: false }, { t: "Real estate boards will automatically revoke the inspector's license.", c: false } ], exp: "Scope Management: Selectively inspecting excluded systems can invalidate contract scope limitation clauses in court." },
+        { cat: "Section 4 & Tools: Practice", q: "Where does the home inspector's primary loyalty and responsibility belong? (Select ALL that apply)", diagram: "", options: [ { t: "Professional loyalty belongs strictly to the home itself (reporting its true condition objectively).", c: true }, { t: "Legal contractual responsibility belongs to the client who signed the contract.", c: true }, { t: "Primary loyalty belongs to the referring real estate agent to protect sales transactions.", c: false } ], exp: "Carson Dunlop Ethics: Professional allegiance is to the home itself; contractual duty is to the paying client." },
+        { cat: "Section 4 & Tools: Practice", q: "A furious buyer calls six months post-closing claiming the basement flooded during a rainstorm. What is the inspector's best first action?", diagram: "", options: [ { t: "Listen attentively without interruption or defensiveness, and thank the client for calling.", c: true }, { t: "Immediately cite the contract clause excluding intermittent foundation leakage.", c: false }, { t: "Offer a full inspection refund in exchange for signing a liability waiver.", c: false } ], exp: "Complaint Handling: Listen fully without defensiveness and thank the caller to de-escalate tension before gathering facts." },
+        { cat: "Section 4 & Tools: Practice", q: "Under Carson Dunlop's statistical complaint analysis, what is the distribution of issues?", diagram: "", options: [ { t: "White: 10% (no defect/not an inspection issue)", c: true }, { t: "Black: 10% (clear inspector omission)", c: true }, { t: "Gray: 80% (ambiguous liability, intermittent defect, or concealment)", c: true }, { t: "White: 50%, Black: 40%, Gray: 10%", c: false } ], exp: "Complaint Breakdown: 10% White, 10% Black, and 80% Gray." },
+        { cat: "Section 4 & Tools: Practice", q: "Which tools are included in the Carson Dunlop Basic Inspection Kit? (Select ALL that apply)", diagram: "", options: [ { t: "Flashlight and spare batteries", c: true }, { t: "Carpenter’s awl (for probing rot)", c: true }, { t: "Telescopic mirror (for inspecting heat exchangers)", c: true }, { t: "Electrical receptacle analyzer / circuit tester", c: true }, { t: "Infrared thermal imaging camera", c: false } ], exp: "Tools Module: Flashlight, awl, mirror, tape, and circuit tester belong to the Basic Kit; thermal cameras are advanced/optional." },
+        { cat: "Section 4 & Tools: Practice", q: "During a complaint revisit, why is it critical NOT to bring advanced diagnostic tools that were not used during the initial inspection?", diagram: "", options: [ { t: "It invites the question: 'Why didn't you use this tool during the original inspection?'", c: true }, { t: "Advanced tools are illegal during dispute resolution site visits.", c: false }, { t: "It automatically voids the inspector's errors and omissions insurance.", c: false } ], exp: "Revisit Protocols: Never use advanced tools on a revisit if they were not part of the standard visual SOP during the original inspection." },
+        { cat: "Section 4 & Tools: Practice", q: "What are the three distinct professional approaches to handling client complaints? (Select ALL that apply)", diagram: "", options: [ { t: "The Hardliner (defends against all claims vigorously, never admits mistake)", c: true }, { t: "The Validater (defends against unfair claims, responds if a valid error occurred)", c: true }, { t: "The Conciliator (pays to make problems disappear regardless of fault)", c: true }, { t: "The Litigator (initiates immediate counter-lawsuits)", c: false } ], exp: "Section 6.0: The 3 inspector philosophies are Hardliner, Validater, and Conciliator." },
+        { cat: "Section 4 & Tools: Practice", q: "What does the Carson Dunlop 'Mean Scale' dictate regarding communication mediums? (Select ALL that apply)", diagram: "", options: [ { t: "It is easiest for people to be mean in writing", c: true }, { t: "It is harder for people to be mean on the phone", c: true }, { t: "It is hardest for people to be mean face-to-face", c: true }, { t: "People are completely calm and non-confrontational in email letters", c: false } ], exp: "Section 6.3: Mean scale shows people are most aggressive in writing, less on the phone, and least face-to-face." },
+        { cat: "Section 4 & Tools: Practice", q: "Under Step 4 of the 'Responsibility Yardstick', what question must be asked? (Select the BEST answer)", diagram: "", options: [ { t: "Would a competent inspector identify this problem?", c: true }, { t: "Does the client have active homeowners insurance coverage?", c: false }, { t: "How much profit was made on the original inspection fee?", c: false } ], exp: "Section 6.4: Step 4 asks: 'Would a competent inspector identify this problem?'" },
+        { cat: "Section 4 & Tools: Practice", q: "When conducting a complaint revisit involving an alleged missed defect found by a contractor, who should attend? (Select ALL that apply)", diagram: "", options: [ { t: "The original home inspector who performed the inspection", c: true }, { t: "A colleague or manager who can conduct most of the conversation calmly", c: true }, { t: "The contractor who uncovered or identified the problem", c: true }, { t: "The municipal tax assessment officer", c: false } ], exp: "Section 6.3: The inspector, a colleague/manager, and the discovering contractor should attend the revisit." },
+        { cat: "Section 4 & Tools: Practice", q: "What legal protection must be secured in exchange for any settlement payout to a client?", diagram: "", options: [ { t: "A signed Release freeing the inspector from further current or future liability claims", c: true }, { t: "A verbal promise over the telephone", c: false }, { t: "A revised invoice marked 'paid in full'", c: false } ], exp: "Section 6.4: Always obtain a formal legal Release before paying any settlement funds." },
+        { cat: "Section 4 & Tools: Practice", q: "Why should inspectors avoid advertising that they carry Errors & Omissions (E&O) insurance? (Select ALL that apply)", diagram: "", options: [ { t: "It signals to litigious clients and attorneys that an insurance pool is available for payouts", c: true }, { t: "It increases the likelihood of frivolous claims being filed", c: true }, { t: "Carrying insurance is illegal in North America", c: false } ], exp: "Section 6.1: Advertising E&O insurance invites lawsuits from opportunistic claimants." },
+        { cat: "Section 4 & Tools: Practice", q: "Things are going well until you break a kitchen floor tile by dropping your flashlight. What do you do? (Select one)", diagram: "", options: [ { t: "You say nothing and continue", c: false }, { t: "You recommend installation of a more resilient material like vinyl or hardwood", c: false }, { t: "You cover the damage with a floor mat", c: false }, { t: "You say the floor finishes are old and need replacement anyways", c: false }, { t: "You apologize and offer to pay for repairs", c: true } ], exp: "Professional accountability requires apologizing and covering accidental damages caused by the inspector." },
+        { cat: "Section 4 & Tools: Practice", q: "An inspector needs to measure chimney clearance above a ridge and stair riser height. Which tool is used?", diagram: "", options: [ { t: "25-foot measuring tape with a 1-inch-wide blade", c: true }, { t: "Moisture scanner", c: false }, { t: "Amp-meter", c: false } ], exp: "Tools Module: A 25-ft measuring tape with 1-in blade measures framing, chimney height, and stair geometry." },
+        { cat: "Section 4 & Tools: Practice", q: "Which tool is specifically designed to view furnace heat exchangers and tight combustion chambers?", diagram: "", options: [ { t: "Small telescopic mirror", c: true }, { t: "Drop sheet", c: false }, { t: "Plumb bob", c: false } ], exp: "Tools Module: A small telescopic mirror allows inspection of confined furnace heat exchangers." },
+        { cat: "Section 4 & Tools: Practice", q: "An inspector uses a magnet on plumbing piping in the basement. What is the inspector testing for?", diagram: "", options: [ { t: "Differentiating galvanized steel (ferrous) from copper or brass (non-ferrous) pipes", c: true }, { t: "Detecting active electrical grounding current in water lines", c: false }, { t: "Checking for lead solder joints", c: false } ], exp: "Tools Module: Magnets stick to ferrous galvanized steel, differentiating it from non-ferrous copper/brass." },
+        { cat: "Section 4 & Tools: Practice", q: "What is the purpose of carrying a 4-foot spirit level (mason's level)? (Select ALL that apply)", diagram: "", options: [ { t: "Measuring out-of-plumb vertical columns and walls", c: true }, { t: "Measuring out-of-level floors, ceilings, and structural beams", c: true }, { t: "Verifying minimum required slopes on plumbing waste pipes, vents, and gutters", c: true }, { t: "Testing branch circuit amperage capacity", c: false } ], exp: "Tools Module: Spirit levels measure plumb, level, and slope on pipes, vents, and gutters." },
+        { cat: "Section 4 & Tools: Practice", q: "Why should an inspector carry a Drop Sheet in their vehicle? (Select the BEST answer)", diagram: "", options: [ { t: "To place under attic hatches and over clothes in closets to catch insulation debris", c: true }, { t: "To cover broken windows during rainstorms", c: false }, { t: "To wrap water heaters that lack thermal blankets", c: false } ], exp: "Tools Module: Drop sheets protect closet clothing and flooring below attic access hatches." },
+        { cat: "Section 4 & Tools: Practice", q: "How is an HVAC thermometer utilized during a central air conditioning inspection?", diagram: "", options: [ { t: "To measure temperature drop (split) across the evaporator coil to verify cooling performance", c: true }, { t: "To test electrical resistance in the compressor capacitor", c: false }, { t: "To measure duct static air pressure", c: false } ], exp: "Tools Module: Thermometers measure temperature drop across A/C coils and rise across furnaces." },
+        { cat: "Section 4 & Tools: Practice", q: "What is the Carson Dunlop recommendation regarding making physical repairs with Electrical Tape?", diagram: "", options: [ { t: "Inspectors should NOT perform physical repairs during an inspection as it exceeds professional scope", c: true }, { t: "Inspectors must repair all exposed conductors with tape before leaving the site", c: false }, { t: "Tape repairs are mandated by provincial home inspection acts", c: false } ], exp: "Tools Module: Carson Dunlop notes that making repairs (even temporary tape) is not recommended." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: It is a day with heavy, continuous rain. You are inspecting a two-story home. Which of the following statements is likely NOT accurate? (Select one)", diagram: "", options: [ { t: "The roof cannot be walked safely due to slip hazards.", c: false }, { t: "Exterior grading and drainage can be evaluated better than on a dry day.", c: false }, { t: "The air conditioner cannot be tested safely if the disconnect switch is exposed to heavy rain.", c: false }, { t: "The main electrical panel cover must be removed to fulfill the Standards of Practice.", c: true }, { t: "Foundation leaks and active water penetration are more likely to be visible.", c: false } ], exp: "Safety always overrides the Standards of Practice. You should never open an electrical panel if you are wet, standing in water, or exposed to heavy rain." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: You arrive at an occupied home and find the basement walls and garage stacked floor-to-ceiling with the seller's moving boxes. What is your proper course of action? (Select ALL that apply)", diagram: "", options: [ { t: "Document the limitation in your written report.", c: true }, { t: "Move the boxes yourself so you can inspect the foundation walls.", c: false }, { t: "Advise the client verbally that you cannot inspect what you cannot see.", c: true }, { t: "Reschedule the inspection at your own expense.", c: false }, { t: "Recommend a follow-up inspection once the areas are cleared.", c: true } ], exp: "Inspectors do not move personal property (liability risk). You must inspect what is readily accessible, thoroughly document the limitations, and manage the client's expectations." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: You arrive at a vacant home for a scheduled inspection and discover that the electricity and water are completely shut off at the municipal mains. What do you do?", diagram: "", options: [ { t: "Turn the utility mains on yourself to complete a thorough inspection.", c: false }, { t: "Inspect the home as-is, documenting the severe limitations in your report.", c: true }, { t: "Turn on the water to test plumbing, but leave the electricity off.", c: false }, { t: "Stop the inspection immediately and demand the seller return to fix it.", c: false } ], exp: "Home inspectors never turn on main utility valves or breakers due to the massive risk of causing a flood, gas leak, or electrical fire. You must inspect the home in its current condition and document the limitations." },
+        { cat: "Section 4 & Tools: Practice", q: "SCENARIO: The buyer's agent pulls you aside before the clients arrive and says, 'My clients are very nervous first-time buyers. This minor roof leak is no big deal, so please don't make a big fuss about it in the report or they'll walk away from the deal.' What is your best response?", diagram: "", options: [ { t: "Agree to minimize it verbally, but write it up accurately in the report.", c: false }, { t: "Confront the agent loudly in front of the clients once they arrive.", c: false }, { t: "Report the condition accurately and objectively in both your verbal summary and written report.", c: true }, { t: "Cancel the inspection and leave the property immediately.", c: false } ], exp: "Your primary loyalty is to the factual condition of the home, and your fiduciary duty is to your client. You cannot downplay defects to protect a real estate transaction." },
+        { cat: "Section 4 & Tools: Practice", q: "SCENARIO: The seller is home during the inspection. They follow you closely and become highly defensive and argumentative every time you point out a defect to your buyer. What is the best strategy?", diagram: "", options: [ { t: "Argue back with the seller to assert your professional authority.", c: false }, { t: "Demand that the seller leave their own property.", c: false }, { t: "Defer the verbal summary of the defects until you are alone with the buyer outside or at the end of the inspection.", c: true }, { t: "Agree with the seller's excuses to keep the peace.", c: false } ], exp: "Avoid on-site confrontations. It is best to remain polite, take your notes, and wait to discuss sensitive findings with your client privately during the closing summary." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: Your client is a licensed electrician. During the electrical portion of the inspection, they begin unscrewing deadfront covers and pulling out receptacles from the wall to check the wiring themselves. What do you do?", diagram: "", options: [ { t: "Let them do it since they are licensed and know what they are doing.", c: false }, { t: "Politely ask them to stop, explaining that it violates your insurance and standard safety procedures for the inspection.", c: true }, { t: "Hand them your tools to speed up the process.", c: false }, { t: "Leave the room and let them finish.", c: false } ], exp: "You are responsible for the safety of the site during your inspection. Even if the client is licensed, dismantling components exceeds visual inspection standards and poses a massive liability if damage or injury occurs." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: You open the basement door to head downstairs and immediately smell a strong, unmistakable odor of natural gas. What do you do?", diagram: "", options: [ { t: "Turn on the basement lights to see better as you descend.", c: false }, { t: "Proceed quickly to the furnace to find the leak using your combustible gas detector.", c: false }, { t: "Evacuate the house immediately and notify the occupants and the gas utility/emergency services.", c: true }, { t: "Open all the basement windows to clear the smell before inspecting.", c: false } ], exp: "A strong smell of gas is an immediate life-safety emergency. Do not touch electrical switches (which can spark) or go hunting for the leak. Evacuate and report it." },
+        { cat: "Section 4 & Tools: Practice", q: "SCENARIO: While inspecting the attic, your foot slips off a ceiling joist. Your boot goes through the drywall, leaving a hole in the ceiling of the master bedroom below. What do you do?", diagram: "", options: [ { t: "Say nothing, document it as pre-existing damage, and hope they don't notice.", c: false }, { t: "Apologize immediately, take responsibility, and offer to pay for the repair.", c: true }, { t: "Tell the client the drywall was installed poorly and couldn't support standard weight.", c: false }, { t: "Recommend they install a new attic access hatch over the hole.", c: false } ], exp: "Just like the dropped flashlight scenario in your study material, professional accountability dictates that you own up to accidents and cover the costs of repairs." },
+        { cat: "Quiz 3: Standards & Practice", q: "SCENARIO: You are inspecting a 70-year-old home that was completely renovated ('flipped') two months ago. Everything on the surface looks brand new. What are your primary concerns? (Select ALL that apply)", diagram: "", options: [ { t: "Older underlying systems (like cast iron plumbing or knob-and-tube wiring) may have been concealed rather than updated.", c: true }, { t: "Structural modifications may have been made without proper permits or engineering.", c: true }, { t: "You do not need to inspect the attic because the listing says the roof is new.", c: false }, { t: "The flip may have been done by a DIY investor rather than licensed trades.", c: true }, { t: "The foundation is guaranteed to be stable because of the recent cosmetic updates.", c: false } ], exp: "Flipped homes often feature 'lipstick on a pig' renovations. The primary concern is that structural or system upgrades were bypassed for cheap cosmetic fixes, or done by unlicensed DIYers." },
+        { cat: "Quiz 2: Written Reports", q: "SCENARIO: You notice visual evidence of what appears to be black mold covering a large area of the cold room walls. How should you handle this in your communication and report? (Select ALL that apply)", diagram: "", options: [ { t: "Identify the exact species of mold for the client.", c: false }, { t: "Describe the condition as 'a mold-like substance' or 'suspect microbial growth.'", c: true }, { t: "Point out the moisture source (e.g., foundation leak or lack of ventilation) causing the issue.", c: true }, { t: "Recommend further evaluation by a qualified environmental specialist.", c: true }, { t: "Tell the client the house is a toxic hazard and they should cancel the purchase.", c: false } ], exp: "Home inspectors are generalists, not environmental hygienists. You cannot visually identify toxic mold species. You must report the visual condition accurately, identify the root cause (moisture), and defer to a specialist." },
+
+        // 104-128: APPENDIX A/B/C SAMPLE REPORTS & CONTRACTS EXAM QUESTIONS (25 Qs)
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Under the Carson Dunlop Standard Inspection Agreement, what is the legal effect if a homeowner discovers a missed defect and immediately replaces it before notifying the inspector? (Select the BEST answer)", diagram: "", options: [ { t: "The inspector and company are released from liability because the evidence was altered before investigation", c: true }, { t: "The inspector must pay for the replacement in full regardless", c: false }, { t: "The client automatically wins double damages", c: false } ], exp: "Agreement Item 6 (Time to Investigate): The company has no liability if conditions have been altered or replaced before a reasonable chance to investigate." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "According to the Limitations and Conditions in Appendices A, B, and C, which items are explicitly excluded from a standard visual inspection? (Select ALL that apply)", diagram: "", options: [ { t: "Air quality, toxic mold, spores, and fungal growth", c: true }, { t: "Buried fuel oil, septic, or gasoline storage tanks", c: true }, { t: "Asbestos, lead, UFFI, and hazardous building materials", c: true }, { t: "Evaluating whether plumbing fixtures supply water", c: false }, { t: "Identifying defects hidden behind finished walls, floors, or ceilings", c: true } ], exp: "Agreement Limitations (Items 2, 3, 4, 5): Hazardous materials, concealed areas, mold, and buried tanks are explicitly excluded." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Examine the HRB Code Table. What do Task codes 'P', 'M', and 'CO' stand for? (Select ALL that apply)", diagram: imgCodes, options: [ { t: "P: Provide (install something not currently present)", c: true }, { t: "M: Monitor", c: true }, { t: "CO: Correct", c: true }, { t: "P: Paint over defect", c: false } ], exp: "Explanation of Codes: P = Provide, M = Monitor, CO = Correct." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Under the HRB Explanation of Codes, what does a Time code of 'U' designate?", diagram: imgCodes, options: [ { t: "Unpredictable; this component could last a few months or several years", c: true }, { t: "Urgent same-day hazard", c: false }, { t: "Under warranty", c: false } ], exp: "Explanation of Codes: Time code 'U' stands for Unpredictable life expectancy." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Why is a home inspection defined in the agreement as a 'Sampling Exercise'? (Select ALL that apply)", diagram: "", options: [ { t: "Because components like receptacles, windows, and bricks are numerous, testing is representative", c: true }, { t: "Testing every single component in a home would be cost-prohibitive and impractical", c: true }, { t: "Some visible minor defects in non-tested representative items may go unreported without negligence", c: true }, { t: "It guarantees that 100% of hidden plumbing leaks will be detected", c: false } ], exp: "Agreement Item 1 & 2: Sampling recognizes that testing thousands of repetitive items individually is unfeasible." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "In the Horizon Software Report (Appendix B), how is every significant defect structured?", diagram: "", options: [ { t: "System/Material heading, Condition statement, Location, Task, and Timeframe", c: true }, { t: "Fixed contractor repair quote and warranty guarantee", c: false }, { t: "Municipal building code violation citation number", c: false } ], exp: "Horizon format unifies Description/System, Condition, Location, Task, and Timeframe." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the standard disclaimer regarding Ballpark Costs in Carson Dunlop reports?", diagram: "", options: [ { t: "Prices vary by up to 300% and figures are rough estimates; clients must obtain formal trade quotes", c: true }, { t: "Ballpark costs are legally binding price guarantees by the home inspection firm", c: false }, { t: "Inspectors are legally required to provide exact contractor pricing for every repair", c: false } ], exp: "Explanation of Codes Note: Ballpark figures are rough approximations varying by 300%; trade estimates are required." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "According to the Floor Joist Notching & Boring guidelines in Appendix B, which rules apply? (Select ALL that apply)", diagram: "", options: [ { t: "Notches in the top or bottom of a joist must not exceed 1/6 of the joist depth", c: true }, { t: "Notches are strictly prohibited in the middle third of the joist span", c: true }, { t: "Holes drilled through joists must maintain at least a 2-inch clearance from top and bottom edges", c: true }, { t: "Joist end notches can be up to 1/2 the joist depth", c: false } ], exp: "Appendix B (Structure): Notches max 1/6 depth, forbidden in middle 1/3; holes min 2 in from edges." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What are the electrical cable stapling and support rules illustrated in Appendix B?", diagram: "", options: [ { t: "Cables must be clamped where they enter electrical panels", c: true }, { t: "Cables must be stapled within 12 inches of panels and junction boxes", c: true }, { t: "Cables must be supported every 4.5 feet (USA) or 4-5 feet (Canada)", c: true }, { t: "Cables can be left loose inside wall cavities as long as drywall is installed", c: false } ], exp: "Appendix B (Electrical Cable Support): Details panel entry clamps, 12-inch box proximity, and 4.5-ft spacing rules." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Why is 'Reversed Polarity' on a polarized receptacle a dangerous electrical defect? (Appendix B)", diagram: "", options: [ { t: "It energizes the outer metal screw shell of light fixtures, creating shock hazards during bulb replacement", c: true }, { t: "It automatically trips the main service entrance breakers", c: false }, { t: "It reverses the rotation of all 240-volt appliance motors", c: false } ], exp: "Appendix B (Electrical - Polarity): Reversed polarity puts hot voltage on the outer shell of lamp sockets, risking shock when changing bulbs." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is a 'Double Tap' (Double Lugging) in an electrical panel? (Appendix B)", diagram: "", options: [ { t: "Connecting two branch circuit wires to a single fuse or breaker terminal not rated for two wires", c: true }, { t: "Installing two main service disconnect boxes side-by-side", c: false }, { t: "Bridging the neutral and ground busbars together in a sub-panel", c: false } ], exp: "Appendix B (Electrical): Double tapping risks loose connections, arcing, and overheating." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the function of a Carson Dunlop gas piping 'Drip Leg' (Sediment Trap)? (Appendix B Heating)", diagram: "", options: [ { t: "Traps moisture, rust, and debris before gas reaches the burner controls and valves", c: true }, { t: "Regulates incoming natural gas line pressure", c: false }, { t: "Collects condensate drainage from high-efficiency heat exchangers", c: false } ], exp: "Appendix B (Heating): A drip leg captures physical debris and moisture in gas lines to protect valves." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the minimum required upward slope for a gas appliance B-vent connector? (Appendix B Heating)", diagram: "", options: [ { t: "Minimum upward pitch of 1/4 inch per foot towards the chimney/flue", c: true }, { t: "Minimum downward slope of 1 inch per foot away from the furnace", c: false }, { t: "Must be installed in a perfectly vertical orientation only", c: false } ], exp: "Appendix B (Heating): Vent connectors require at least 1/4 inch per foot upward slope to ensure proper draft." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the expected Temperature Drop (Delta T) across an operational central A/C evaporator coil? (Appendix B)", diagram: "", options: [ { t: "15°F to 20°F (8°C to 11°C)", c: true }, { t: "5°F to 10°F", c: false }, { t: "30°F to 40°F", c: false } ], exp: "Appendix B (Cooling): A healthy evaporator coil produces a 15°F to 20°F temperature drop." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Which refrigerant line must be insulated on a split system air conditioner? (Appendix B Cooling)", diagram: "", options: [ { t: "The larger suction line carrying cold gas back to the compressor", c: true }, { t: "The smaller liquid line carrying warm liquid refrigerant", c: false }, { t: "Neither line requires insulation", c: false } ], exp: "Appendix B (Cooling): The larger suction line carries cold refrigerant and must be insulated." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the standard Attic Ventilation ratio specified in Carson Dunlop manuals? (Appendix B)", diagram: "", options: [ { t: "1 square foot of net free vent area for every 300 square feet of attic floor space (1/300)", c: true }, { t: "1 square foot of vent area for every 50 square feet of attic space", c: false }, { t: "1 square foot of vent area for every 2,000 square feet of attic space", c: false } ], exp: "Appendix B (Insulation): The 1/300 attic ventilation rule is standard across Carson Dunlop guidelines." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Why is exposed plastic board insulation in an attached garage categorized as an immediate safety defect? (Appendix B)", diagram: "", options: [ { t: "It is a combustible fire hazard that requires an approved thermal barrier like drywall", c: true }, { t: "It emits toxic refrigerant gases when exposed to sunlight", c: false }, { t: "It attracts termites and carpenter ants directly into the framing", c: false } ], exp: "Appendix B (Insulation): Foam plastic insulation is flammable and requires thermal barrier protection." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the minimum recommended downspout discharge distance away from foundation walls? (Appendix B)", diagram: "", options: [ { t: "At least 6 feet (1.8 m) away from the house", c: true }, { t: "At least 6 inches away from the home", c: false }, { t: "Discharging directly beside the foundation wall", c: false } ], exp: "Appendix B (Exterior): Downspouts must extend at least 6 feet to prevent basement water infiltration." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the standardized Carson Dunlop hierarchy for investigating and addressing basement water leaks? (Appendix A/B/C)", diagram: "", options: [ { t: "1. Gutters/downspouts &rarr; 2. Lot grading &rarr; 3. Foundation cracks &rarr; 4. High water table / sumps", c: true }, { t: "1. Sump pumps &rarr; 2. Foundation waterproofing &rarr; 3. Gutters &rarr; 4. Grading", c: false } ], exp: "Appendix A/B/C (Interior): Address surface water controls (gutters, grading) before subsurface repairs." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What is the standard plumbing faucet hot/cold orientation convention? (Appendix B Plumbing)", diagram: "", options: [ { t: "Hot on the LEFT, Cold on the RIGHT", c: true }, { t: "Hot on the RIGHT, Cold on the LEFT", c: false }, { t: "Hot in the center, Cold on both sides", c: false } ], exp: "Appendix B (Plumbing): Standard convention is hot on the left and cold on the right." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What causes vertical foundation cracks at the midpoint of short foundation/crawlspace walls? (Appendix B Structure)", diagram: "", options: [ { t: "Lateral earth pressure / horizontal soil thrust pushing the wall inward", c: true }, { t: "Excessive weight of roof shingles pressing straight down", c: false }, { t: "Thermal expansion of concrete footings during summer heatwaves", c: false } ], exp: "Appendix B (Structure): Lateral thrust causes inward bowing and vertical cracking at midpoints." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "According to the contract limitations in Appendix A, B, and C, what is the policy on inspecting concealed wiring and plumbing?", diagram: "", options: [ { t: "Concealed wiring and plumbing behind walls, floors, and ceilings are explicitly excluded from inspection", c: true }, { t: "Inspectors must remove drywall to inspect hidden electrical cables", c: false }, { t: "Inspectors must guarantee all concealed pipes for 5 years", c: false } ], exp: "Agreement Limitations (Item 2): Concealed components behind walls, floors, or ceilings are inaccessible and excluded." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What does a Task code of 'F' and a Location code of 'BATH' mean in the HRB coding system? (Appendix A/C)", diagram: imgCodes, options: [ { t: "F: Further evaluation required | BATH: Bathroom", c: true }, { t: "F: Furnish new appliance | BATH: Basement utility", c: false }, { t: "F: Fix immediately | BATH: Balcony area", c: false } ], exp: "HRB Code Table: F = Further evaluation required; BATH = Bathroom." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "Under the inspection agreement limitations, what is the inspector's responsibility regarding chimney flues?", diagram: "", options: [ { t: "The quality of chimney draw for wood-burning appliances cannot be determined during a visual home inspection", c: true }, { t: "Inspectors must perform chemical smoke bomb tests on every flue", c: false }, { t: "Inspectors guarantee that all masonry flues are 100% free of creosote", c: false } ], exp: "Appendix B (Heating limitations): Chimney draw quality for wood burners cannot be tested visually during a standard inspection." },
+        { cat: "Appendix A/B/C: Sample Reports & Contracts", q: "What guideline applies when reporting Asbestos or Mold across Carson Dunlop sample reports? (Appendix A/B/C)", diagram: "", options: [ { t: "Note that asbestos/mold may be present in building materials and recommend an Environmental Consultant", c: true }, { t: "Perform laboratory chemical testing on site to verify toxicity levels", c: false }, { t: "Remove all suspected asbestos insulation personally before closing", c: false } ], exp: "Appendix A/B/C Limitations: Inspectors do not test or identify hazardous materials; recommend specialists." }
+    ];
+
+    let currentDeck = [];
+    let currentIdx = 0;
+    let isFlipped = false;
+    let isShuffle = false;
+
+    function saveState() {
+        localStorage.setItem('cd_theme', document.documentElement.getAttribute('data-theme'));
+        localStorage.setItem('cd_fc_idx', currentIdx);
+        localStorage.setItem('cd_fc_cat', document.getElementById('category-filter').value);
+        localStorage.setItem('cd_fc_shuffle', isShuffle);
+    }
+
+    function loadState() {
+        const theme = localStorage.getItem('cd_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.querySelector('.theme-btn').innerText = theme === 'dark' ? '☀️ Theme' : '🌙 Theme';
+        const savedCat = localStorage.getItem('cd_fc_cat');
+        if (savedCat) document.getElementById('category-filter').value = savedCat;
+        isShuffle = localStorage.getItem('cd_fc_shuffle') === 'true';
+        filterCategory(false);
+        const savedIdx = parseInt(localStorage.getItem('cd_fc_idx'));
+        if (!isNaN(savedIdx) && savedIdx < currentDeck.length) currentIdx = savedIdx;
+        updateCard();
+    }
+
+    function initDeck() {
+        document.getElementById('total-flashcards-count').innerText = masterDeck.length;
+        document.getElementById('total-quiz-count').innerText = masterQuizQuestions.length;
+        loadState();
+    }
+
+    function adjustCardHeight() {
+        const front = document.getElementById('card-front-el');
+        const back = document.getElementById('card-back-el');
+        const scene = document.getElementById('card-scene');
+        front.style.position = 'relative'; back.style.position = 'relative';
+        const h = Math.max(front.offsetHeight, back.offsetHeight);
+        front.style.position = 'absolute'; back.style.position = 'absolute';
+        scene.style.height = `${h}px`;
+    }
+
+    function updateCard() {
+        if (currentDeck.length === 0) return;
+        isFlipped = false;
+        document.getElementById('flashcard').classList.remove('is-flipped');
+        document.getElementById('flip-btn').innerText = "Reveal Answer";
+        
+        const cardData = currentDeck[currentIdx];
+        const typeLabel = cardData.type ? `[${cardData.type}] ` : '';
+        document.getElementById('card-tag-front').innerText = typeLabel + cardData.cat;
+        document.getElementById('card-tag-back').innerText = "Answer / Detail";
+        document.getElementById('card-question').innerHTML = cardData.q;
+        document.getElementById('card-diagram-front').innerHTML = cardData.diagram || '';
+        document.getElementById('card-answer').innerHTML = cardData.a;
+        document.getElementById('card-counter').innerText = `Card ${currentIdx + 1} of ${currentDeck.length}`;
+        document.getElementById('progress-bar').style.width = `${((currentIdx + 1) / currentDeck.length) * 100}%`;
+
+        setTimeout(adjustCardHeight, 50);
+        attachImageZoom();
+        saveState();
+    }
+
+    function triggerFlip() {
+        if (currentDeck.length === 0) return;
+        isFlipped = !isFlipped;
+        document.getElementById('flashcard').classList.toggle('is-flipped');
+        document.getElementById('flip-btn').innerText = isFlipped ? "Show Question" : "Reveal Answer";
+        setTimeout(adjustCardHeight, 300);
+    }
+
+    function nextCard() {
+        if (currentDeck.length === 0) return;
+        currentIdx = (currentIdx + 1) % currentDeck.length;
+        updateCard();
+    }
+
+    function prevCard() {
+        if (currentDeck.length === 0) return;
+        currentIdx = (currentIdx - 1 + currentDeck.length) % currentDeck.length;
+        updateCard();
+    }
+
+    function filterCategory(resetIdx = true) {
+        const cat = document.getElementById('category-filter').value;
+        currentDeck = cat === "All" ? [...masterDeck] : masterDeck.filter(item => item.cat === cat);
+        if (isShuffle) shuffleArrayInPlace(currentDeck);
+        if (resetIdx) currentIdx = 0;
+        updateCard();
+    }
+
+    function toggleShuffle() { isShuffle = !isShuffle; filterCategory(true); }
+    function resetProgress() { currentIdx = 0; updateCard(); }
+
+    let touchStartX = 0, touchStartY = 0;
+    const cardEl = document.getElementById('flashcard');
+    cardEl.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, {passive: true});
+
+    cardEl.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+            if (diffX < 0) nextCard(); else prevCard();
+        } else if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
+            triggerFlip();
+        }
+    });
+
+    let activeQuizQuestions = [];
+    let examTimeSeconds = 120 * 60;
+    let timerInterval = null;
+
+    function shuffleArrayInPlace(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    }
+
+    function beginExam() {
+        document.getElementById('start-exam-section').style.display = 'none';
+        document.getElementById('exam-active-section').style.display = 'block';
+        initQuiz();
+        startExamTimer(); // Global timer starts once when exam begins
+    }
+
+    function initQuiz() {
+        const container = document.getElementById('quiz-questions-container');
+        container.innerHTML = '';
+        
+        const cat = document.getElementById('quiz-filter').value;
+        let pool = cat === "All" ? [...masterQuizQuestions] : masterQuizQuestions.filter(item => item.cat === cat);
+        
+        shuffleArrayInPlace(pool);
+        
+        // If "All", randomly slice exactly 95 questions from the 128 bank
+        if (cat === "All" && pool.length > 95) {
+            activeQuizQuestions = pool.slice(0, 95);
+        } else {
+            activeQuizQuestions = pool;
+        }
+
+        activeQuizQuestions.forEach((qData, qIdx) => {
+            if(!qData.q.includes("Select one") && !qData.q.includes("Select the BEST answer")) {
+               shuffleArrayInPlace(qData.options);
+            }
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.id = `mc-card-${qIdx}`;
+            const isMulti = qData.options.filter(o => o.c).length > 1;
+            const inputType = isMulti ? 'checkbox' : 'radio';
+
+            card.innerHTML = `
+                <div class="mc-instruction">${qData.cat} • Q${qIdx + 1} of ${activeQuizQuestions.length} • ${isMulti ? 'Select All That Apply' : 'Select One'}</div>
+                <div class="q-title">${qIdx + 1}. ${qData.q}</div>
+                ${qData.diagram ? qData.diagram : ''}
+                <div class="options-group" id="group-${qIdx}"></div>
+                <div class="explanation" id="mc-exp-${qIdx}">Rationale: ${qData.exp}</div>
+            `;
+            container.appendChild(card);
+
+            const group = document.getElementById(`group-${qIdx}`);
+            qData.options.forEach((opt, oIdx) => {
+                const lbl = document.createElement('label');
+                lbl.className = 'option-label';
+                lbl.id = `lbl-${qIdx}-${oIdx}`;
+                lbl.innerHTML = `
+                    <input type="${inputType}" name="quiz-q-${qIdx}" value="${oIdx}" onchange="updateQuizProgress()">
+                    <span>${opt.t}</span>
+                    <span class="opt-status-tag" id="tag-${qIdx}-${oIdx}"></span>
+                `;
+                group.appendChild(lbl);
+            });
+        });
+        document.getElementById('results-box').style.display = 'none';
+        document.getElementById('submit-quiz-btn').style.display = 'block';
+        updateQuizProgress();
+        attachImageZoom();
+    }
+
+    function updateQuizProgress() {
+        let answered = 0;
+        activeQuizQuestions.forEach((_, qIdx) => {
+            if (document.querySelector(`input[name="quiz-q-${qIdx}"]:checked`)) answered++;
+        });
+        const total = activeQuizQuestions.length;
+        document.getElementById('quiz-progress-bar').style.width = `${(answered / total) * 100}%`;
+        document.getElementById('quiz-progress-text').innerText = `${answered} / ${total} Completed`;
+    }
+
+    function submitQuiz() {
+        clearInterval(timerInterval);
+        let score = 0;
+        
+        activeQuizQuestions.forEach((qData, qIdx) => {
+            const inputs = document.querySelectorAll(`input[name="quiz-q-${qIdx}"]`);
+            const card = document.getElementById(`mc-card-${qIdx}`);
+            const exp = document.getElementById(`mc-exp-${qIdx}`);
+            let qCorrect = true;
+            let anyChecked = false;
+            let requiredCount = qData.options.filter(o => o.c).length;
+            let correctlyCheckedCount = 0;
+
+            inputs.forEach((chk, oIdx) => {
+                const lbl = document.getElementById(`lbl-${qIdx}-${oIdx}`);
+                const tag = document.getElementById(`tag-${qIdx}-${oIdx}`);
+                const isChecked = chk.checked;
+                const shouldBeChecked = qData.options[oIdx].c;
+                chk.disabled = true;
+
+                if (isChecked) anyChecked = true;
+                lbl.className = 'option-label';
+                tag.className = 'opt-status-tag';
+
+                if (isChecked && shouldBeChecked) {
+                    lbl.classList.add('opt-correct'); tag.classList.add('tag-correct', 'show'); tag.innerText = 'Correct'; correctlyCheckedCount++;
+                } else if (!isChecked && shouldBeChecked) {
+                    lbl.classList.add('opt-missed'); tag.classList.add('tag-missed', 'show'); tag.innerText = 'Missed'; qCorrect = false;
+                } else if (isChecked && !shouldBeChecked) {
+                    lbl.classList.add('opt-wrong'); tag.classList.add('tag-wrong', 'show'); tag.innerText = 'Wrong'; qCorrect = false;
+                }
+            });
+
+            if (!anyChecked || correctlyCheckedCount !== requiredCount) qCorrect = false;
+
+            if (qCorrect) {
+                score++;
+                card.className = 'quiz-card correct-card';
+                exp.style.display = 'none';
+            } else {
+                card.className = 'quiz-card incorrect-card';
+                exp.style.display = 'block';
+            }
+        });
+
+        const pct = Math.round((score / activeQuizQuestions.length) * 100);
+        document.getElementById('final-score').innerText = `${score} / ${activeQuizQuestions.length} (${pct}%)`;
+        document.getElementById('score-comment').innerText = pct >= 80 ? "Pass: Outstanding mastery of standard practice!" : "Review your mistakes to lock in knowledge.";
+        document.getElementById('results-box').style.display = 'block';
+        document.getElementById('submit-quiz-btn').style.display = 'none';
+        localStorage.setItem('cd_last_score', pct);
+        window.scrollTo({ top: document.getElementById('results-box').offsetTop - 50, behavior: 'smooth' });
+    }
+
+    function reviewIncorrect() {
+        document.querySelectorAll('.correct-card').forEach(c => c.style.display = 'none');
+        const firstWrong = document.querySelector('.incorrect-card');
+        if (firstWrong) window.scrollTo({ top: firstWrong.offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        document.getElementById('results-box').style.display = 'none';
+        document.getElementById('start-exam-section').style.display = 'none';
+        document.getElementById('exam-active-section').style.display = 'block';
+        beginExam(); // Restarts exam with a fresh set of 95 random questions and resets global timer
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterQuizCategory() {
+        initQuiz(); // Filtering category reloads questions without resetting the global 120-minute clock
+    }
+
+    function startExamTimer() {
+        clearInterval(timerInterval);
+        examTimeSeconds = 120 * 60;
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            if (examTimeSeconds > 0) { examTimeSeconds--; updateTimerDisplay(); }
+            else { clearInterval(timerInterval); submitQuiz(); }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(examTimeSeconds / 60);
+        const s = examTimeSeconds % 60;
+        document.getElementById('exam-timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        if (tab === 'flashcards') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('flashcards-tab').classList.add('active');
+            setTimeout(adjustCardHeight, 100);
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('quiz-tab').classList.add('active');
+        }
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        document.querySelector('.theme-btn').innerText = newTheme === 'dark' ? '☀️ Theme' : '🌙 Theme';
+        saveState();
+    }
+
+    function attachImageZoom() {
+        document.querySelectorAll('.diagram-box img').forEach(img => {
+            img.onclick = (e) => {
+                e.stopPropagation();
+                document.getElementById('modal-img').src = img.src;
+                document.getElementById('img-modal').style.display = 'flex';
+            };
+        });
+    }
+    function closeModal() { document.getElementById('img-modal').style.display = 'none'; }
+
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('flashcards-tab').classList.contains('active')) {
+            if (e.code === 'Space') { e.preventDefault(); triggerFlip(); }
+            else if (e.code === 'ArrowRight') nextCard();
+            else if (e.code === 'ArrowLeft') prevCard();
+        }
+    });
+
+    window.onscroll = () => { document.getElementById('btt-btn').style.display = window.scrollY > 500 ? 'block' : 'none'; };
+    window.onload = () => { initDeck(); };
+    window.onresize = adjustCardHeight;
+</script>
+</body>
+</html>
